@@ -1,0 +1,1830 @@
+<!--
+Programming by Rudy Paganini / forevermidi.com - released under the Attribution-NonCommercial-ShareAlike 4.0 International License: https://creativecommons.org/licenses/by-nc-sa/4.0/.
+-->
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACID MATH STATION v beta 3.0 — forevermidi.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+#wrap{position:fixed;inset:0 280px 40px 0;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
+#wrap canvas{position:absolute;image-rendering:auto}
+body.fs #wrap{inset:0}
+body.fs #sidebar,body.fs #botbar{display:none}
+#sidebar{position:fixed;top:0;right:0;bottom:0;width:280px;background:rgba(0,0,0,0.97);border-left:1px solid #00ff41;display:flex;flex-direction:column;z-index:30;font-family:'Orbitron',monospace}
+#sb-title{padding:10px 14px 8px;border-bottom:1px solid rgba(0,255,65,0.18);flex-shrink:0}
+.logo{font-size:12px;font-weight:900;color:#00ff41;letter-spacing:.13em;text-shadow:0 0 14px #00ff41,0 0 40px #00ff4122;line-height:1.2}
+.sub a{font-size:7px;color:#007a22;letter-spacing:.15em;text-decoration:none;font-family:'Orbitron',monospace;transition:color .2s;margin-top:2px;display:block}
+.sub a:hover{color:#00ff41}
+#tabs{display:flex;border-bottom:1px solid rgba(0,255,65,0.16);flex-shrink:0}
+.tab{flex:1;padding:7px 0;text-align:center;font-size:7.5px;font-weight:700;letter-spacing:.06em;color:#007a22;cursor:pointer;border-right:1px solid rgba(0,255,65,0.1);font-family:'Orbitron',monospace;transition:all .12s}
+.tab:last-child{border-right:none}
+.tab:hover{color:#00cc33;background:rgba(0,255,65,0.04)}
+.tab.active{color:#00ff41;background:rgba(0,255,65,0.07);text-shadow:0 0 8px #00ff4188}
+#sb-body{flex:1;overflow-y:auto;padding:10px 14px 14px}
+#sb-body::-webkit-scrollbar{width:3px;background:#000}
+#sb-body::-webkit-scrollbar-thumb{background:#003a10}
+.tab-page{display:none}.tab-page.active{display:block}
+.sec{margin-bottom:14px}
+.sec-title{font-size:7.5px;font-weight:700;letter-spacing:.16em;color:#00ff41;text-shadow:0 0 5px #00ff4133;margin-bottom:7px;padding-bottom:3px;border-bottom:1px solid rgba(0,255,65,0.12)}
+.row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.lbl{color:#00cc44;font-size:7.5px;white-space:nowrap;min-width:70px;font-family:'Orbitron',monospace}
+.row input[type=range]{flex:1;accent-color:#00ff41;height:9px;cursor:pointer;min-width:0}
+.val{color:#00ff41;font-size:7.5px;min-width:24px;text-align:right;font-family:'Orbitron',monospace}
+.btn{background:transparent;border:1px solid #00ff41;color:#00ff41;padding:5px 9px;border-radius:3px;cursor:pointer;font-family:'Orbitron',monospace;font-size:7.5px;font-weight:700;letter-spacing:.06em;white-space:nowrap;transition:all .12s;box-shadow:0 0 4px #00ff4111}
+.btn:hover{background:rgba(0,255,65,0.1);box-shadow:0 0 10px #00ff4144}
+.btn.on{background:rgba(0,255,65,0.18);box-shadow:0 0 14px #00ff4188;text-shadow:0 0 8px #00ff41}
+.btn:disabled{opacity:.2;cursor:default;box-shadow:none}
+.btn.nuke{border-color:#ff00ff;color:#ff00ff;box-shadow:0 0 8px #ff00ff33;font-size:8px;font-weight:900}
+.btn.nuke:hover{background:rgba(255,0,255,.12);box-shadow:0 0 16px #ff00ff66}
+.btn.nuke.on{background:rgba(255,0,255,.2);box-shadow:0 0 24px #ff00ffaa;text-shadow:0 0 10px #ff00ff;animation:pulse-nuke .4s infinite alternate}
+@keyframes pulse-nuke{from{box-shadow:0 0 18px #ff00ffaa}to{box-shadow:0 0 36px #ff00ff,0 0 60px #ff00ff44}}
+.btn.red{border-color:#9b30ff;color:#9b30ff;box-shadow:0 0 6px #9b30ff22}
+.btn.red:hover{background:rgba(155,48,255,0.12)}
+.btn.red.on{background:rgba(155,48,255,0.25);box-shadow:0 0 18px #9b30ffaa;text-shadow:0 0 8px #9b30ff}
+.btn.amber{border-color:#ff8800;color:#ff8800;box-shadow:0 0 4px #ff880022}
+.btn.amber:hover{background:rgba(255,136,0,0.12)}
+.btn.amber.on{background:rgba(255,136,0,0.2);box-shadow:0 0 14px #ff880088}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+select{background:#000;border:1px solid #00882a;color:#00ff41;padding:4px 6px;border-radius:3px;font-size:7.5px;font-family:'Orbitron',monospace;cursor:pointer;width:100%}
+select:focus{outline:none;border-color:#00ff41}
+#currentPresetName{color:#00ff41;font-size:8px;font-family:'Orbitron',monospace;letter-spacing:.1em;text-shadow:0 0 8px #00ff4166;padding:2px 0 5px}
+#trackList{max-height:80px;overflow-y:auto;margin-bottom:6px;border:1px solid rgba(0,255,65,0.15);border-radius:3px}
+#trackList::-webkit-scrollbar{width:2px;background:#000}
+#trackList::-webkit-scrollbar-thumb{background:#003a10}
+.track-item{padding:4px 7px;font-size:7px;color:#007a22;cursor:pointer;font-family:'Orbitron',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .1s;border-bottom:1px solid rgba(0,255,65,0.06)}
+.track-item:last-child{border-bottom:none}
+.track-item:hover{color:#00cc33;background:rgba(0,255,65,0.05)}
+.track-item.playing{color:#00ff41;background:rgba(0,255,65,0.08)}
+#nowPlaying{font-size:6.5px;color:#006a1a;font-family:'Orbitron',monospace;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.transport{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.tbtn{background:transparent;border:1px solid #006a1a;color:#00aa33;padding:4px 7px;border-radius:3px;cursor:pointer;font-family:'Orbitron',monospace;font-size:7.5px;font-weight:700;transition:all .12s}
+.tbtn:hover{border-color:#00ff41;color:#00ff41;background:rgba(0,255,65,0.06)}
+.tbtn.on{border-color:#00ff41;color:#00ff41;background:rgba(0,255,65,0.12)}
+.vu-wrap{display:flex;gap:2px;height:32px;align-items:flex-end;margin-bottom:4px}
+.vu-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:1px}
+.vu-bar{flex:0 0 auto;width:100%;max-width:8px;border-radius:1px 1px 0 0;min-height:2px;transition:height .04s}
+#vuBass{background:linear-gradient(0deg,#9b30ff,#cc60ff)}
+#vuMid{background:linear-gradient(0deg,#00ff41,#aaff00)}
+#vuHi{background:linear-gradient(0deg,#00aaff,#00ffff)}
+#vuLevel{background:linear-gradient(0deg,#ff8800,#ffcc00)}
+#vuVid{background:linear-gradient(0deg,#ff3060,#ff8040)}
+.vu-lbl{font-size:6px;color:#006a1a;font-family:'Orbitron',monospace;text-align:center}
+.src-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:8px}
+.src-val{font-size:7px;color:#007a22;font-family:'Orbitron',monospace;padding:3px 5px;border:1px solid rgba(0,255,65,0.12);border-radius:2px;text-align:center;transition:all .1s}
+.src-val.active{color:#00ff41;border-color:rgba(0,255,65,0.4)}
+#botbar{position:fixed;bottom:0;left:0;right:280px;height:40px;background:rgba(0,0,0,0.97);border-top:1px solid #00ff41;border-right:1px solid rgba(0,255,65,0.25);display:flex;align-items:center;gap:8px;padding:0 12px;z-index:30;font-family:'Orbitron',monospace}
+#dot{width:7px;height:7px;border-radius:50%;background:#9b30ff;display:none;animation:bl 1s infinite;flex-shrink:0;box-shadow:0 0 8px #9b30ff}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.08}}
+#freqBar{flex:1;height:28px;background:#001500;border:1px solid #002808;border-radius:2px;overflow:hidden;position:relative}
+#freqCanvas{position:absolute;inset:0;width:100%;height:100%}
+#fsBtn{position:fixed;bottom:48px;right:288px;z-index:40;background:rgba(0,0,0,0.7);border:1px solid rgba(0,255,65,0.4);color:#00ff41;padding:5px 8px;border-radius:3px;cursor:pointer;font-family:'Orbitron',monospace;font-size:7.5px;font-weight:700}
+#fsBtn:hover{background:rgba(0,255,65,0.12);border-color:#00ff41}
+body.fs #fsBtn{right:8px;bottom:8px}
+#st{position:fixed;top:4px;left:50%;transform:translateX(-50%);background:#000;border:1px solid #00ff41;color:#00ff41;padding:4px 14px;border-radius:0 0 8px 8px;font-size:8px;font-family:'Orbitron',monospace;display:none;z-index:50;letter-spacing:.1em}
+#bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#9b30ff,#00ff41,#00aaff);width:0%;display:none;z-index:51}
+#vidOverlay{position:fixed;bottom:48px;left:8px;z-index:40;display:none;flex-direction:column;align-items:center}
+#vidPreview{width:100px;height:56px;object-fit:cover;border:1px solid #ff880055;border-radius:3px}
+#vidLabel{font-size:6px;color:#ff8800;font-family:'Orbitron',monospace;margin-top:2px}
+</style>
+</head>
+<body>
+<div id="bar"></div><div id="st"></div>
+<select id="sceneMode" style="display:none"><option value="0">0</option><option value="1">1</option></select>
+<div id="wrap">
+  <video id="vidSrc" style="display:none" playsinline autoplay muted loop crossorigin="anonymous"></video>
+</div>
+<button id="fsBtn" title="F">FULL</button>
+<div id="vidOverlay"><video id="vidPreview" muted playsinline></video><div id="vidLabel">VIDEO IN</div></div>
+<div id="sidebar">
+  <div id="sb-title">
+    <div class="logo">ACID MATH STATION</div>
+    <div class="sub"><a href="https://forevermidi.com" target="_blank">FOREVERMIDI.COM ↗</a></div>
+  </div>
+  <div id="tabs">
+    <div class="tab active" data-tab="src">SOURCES</div>
+    <div class="tab" data-tab="vis">VISUAL</div>
+    <div class="tab" data-tab="fx">FX</div>
+  </div>
+  <div id="sb-body">
+    <!-- ═══ TAB: SOURCES ═══════════════════════════════════ -->
+    <div class="tab-page active" id="tab-src">
+      <div class="sec">
+        <div class="sec-title">LIVE LEVELS</div>
+        <div class="vu-wrap">
+          <div class="vu-col"><div class="vu-bar" id="vuBass" style="height:2px"></div><div class="vu-lbl">BSS</div></div>
+          <div class="vu-col"><div class="vu-bar" id="vuMid" style="height:2px"></div><div class="vu-lbl">MID</div></div>
+          <div class="vu-col"><div class="vu-bar" id="vuHi" style="height:2px"></div><div class="vu-lbl">HI</div></div>
+          <div class="vu-col"><div class="vu-bar" id="vuLevel" style="height:2px"></div><div class="vu-lbl">LVL</div></div>
+          <div class="vu-col"><div class="vu-bar" id="vuVid" style="height:2px"></div><div class="vu-lbl">VID</div></div>
+        </div>
+        <div class="src-grid">
+          <div class="src-val" id="srcBassDisp">BSS 0.00</div>
+          <div class="src-val" id="srcMidDisp">MID 0.00</div>
+          <div class="src-val" id="srcHiDisp">HI 0.00</div>
+          <div class="src-val" id="srcVidDisp">VID 0.00</div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">AUDIO INPUT</div>
+        <div class="btn-row">
+          <button class="btn" id="micBtn">MIC</button>
+          <label class="btn">LOAD<input type="file" id="fileIn" accept="audio/*,video/*" multiple style="display:none"></label>
+          <button class="btn" id="audioOff">OFF</button>
+        </div>
+        <div class="row"><span class="lbl">Gain</span><input type="range" id="audioGain" min="0" max="500" value="150"><span class="val" id="audioGainV">150</span></div>
+        <div class="row"><span class="lbl">Smooth</span><input type="range" id="audioSmooth" min="0" max="95" value="55"><span class="val" id="audioSmoothV">55</span></div>
+        <div style="font-size:7px;color:#00cc44;font-family:'Orbitron',monospace;margin-bottom:6px" id="audioStatus">NO AUDIO</div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">TRACK PLAYER</div>
+        <div id="trackList"></div>
+        <div id="nowPlaying">NO TRACK LOADED</div>
+        <div class="transport">
+          <button class="tbtn" id="tPrev">PREV</button>
+          <button class="tbtn" id="tStop">STOP</button>
+          <button class="tbtn" id="tPlay">PLAY</button>
+          <button class="tbtn" id="tNext">NEXT</button>
+          <button class="tbtn" id="tRand">RAND</button>
+          <button class="tbtn" id="tLoop">LOOP</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+          <input type="range" id="scrub" min="0" max="100" value="0" step="0.1" style="flex:1;accent-color:#00ff41;height:7px;cursor:pointer">
+          <span id="scrubTime" style="color:#007a22;font-size:7px;font-family:'Orbitron',monospace;min-width:38px;text-align:right">0:00</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">VIDEO INPUT</div>
+        <div class="btn-row">
+          <button class="btn" id="vidCamBtn">CAMERA</button>
+          <label class="btn">VID FILE<input type="file" id="vidFileIn" accept="video/*" style="display:none"></label>
+          <button class="btn" id="vidOffBtn">OFF</button>
+        </div>
+        <div class="row"><span class="lbl">Vid Mix</span><input type="range" id="vidMix" min="0" max="100" value="0"><span class="val" id="vidMixV">0</span></div>
+        <div class="row"><span class="lbl">Vid FX</span><input type="range" id="vidFX" min="0" max="100" value="50"><span class="val" id="vidFXV">50</span></div>
+        <div style="font-size:7px;color:#00ff41;font-family:'Orbitron',monospace;margin-bottom:6px" id="vidStatus">NO VIDEO</div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">BPM SYNC</div>
+        <div class="row"><span class="lbl">BPM</span><input type="range" id="bpm" min="40" max="240" value="120"><span class="val" id="bpmV">120</span></div>
+        <div class="btn-row">
+          <button class="btn" id="bpmSyncBtn">SYNC</button>
+          <button class="btn" id="tapBtn">TAP</button>
+          <button class="btn" id="beatFlashBtn">FLASH</button>
+          <button class="btn" id="beatGlitchBtn">GLITCH</button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">BASS → SYNTHESIS</div>
+        <div class="row"><span class="lbl">Speed</span><input type="range" id="arBassSpeed" min="0" max="100" value="80"><span class="val" id="arBassSpeedV">80</span></div>
+        <div class="row"><span class="lbl">Warp</span><input type="range" id="arBassWarp" min="0" max="100" value="90"><span class="val" id="arBassWarpV">90</span></div>
+        <div class="row"><span class="lbl">Zoom</span><input type="range" id="arBassZoom" min="0" max="100" value="70"><span class="val" id="arBassZoomV">70</span></div>
+        <div class="row"><span class="lbl">Glitch</span><input type="range" id="arBassGlitch" min="0" max="100" value="70"><span class="val" id="arBassGlitchV">70</span></div>
+        <div class="row"><span class="lbl">Metallic</span><input type="range" id="arBassMetal" min="0" max="100" value="30"><span class="val" id="arBassMetalV">30</span></div>
+        <div class="row"><span class="lbl">Obj Pulse</span><input type="range" id="arBassObj" min="0" max="100" value="90"><span class="val" id="arBassObjV">90</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">MIDS → SYNTHESIS</div>
+        <div class="row"><span class="lbl">Turbulence</span><input type="range" id="arMidTurb" min="0" max="100" value="70"><span class="val" id="arMidTurbV">70</span></div>
+        <div class="row"><span class="lbl">Chroma</span><input type="range" id="arMidChroma" min="0" max="100" value="80"><span class="val" id="arMidChromaV">80</span></div>
+        <div class="row"><span class="lbl">Contour</span><input type="range" id="arMidContour" min="0" max="100" value="60"><span class="val" id="arMidContourV">60</span></div>
+        <div class="row"><span class="lbl">Contrast</span><input type="range" id="arMidContrast" min="0" max="100" value="50"><span class="val" id="arMidContrastV">50</span></div>
+        <div class="row"><span class="lbl">Rotate</span><input type="range" id="arMidRotate" min="0" max="100" value="30"><span class="val" id="arMidRotateV">30</span></div>
+        <div class="row"><span class="lbl">Frac Morph</span><input type="range" id="arMidFrac" min="0" max="100" value="60"><span class="val" id="arMidFracV">60</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">HIGHS → SYNTHESIS</div>
+        <div class="row"><span class="lbl">Pixel</span><input type="range" id="arHiPixel" min="0" max="100" value="25"><span class="val" id="arHiPixelV">25</span></div>
+        <div class="row"><span class="lbl">Glitch</span><input type="range" id="arHiGlitch" min="0" max="100" value="50"><span class="val" id="arHiGlitchV">50</span></div>
+        <div class="row"><span class="lbl">RGB Split</span><input type="range" id="arHiRGB" min="0" max="100" value="60"><span class="val" id="arHiRGBV">60</span></div>
+        <div class="row"><span class="lbl">Saturate</span><input type="range" id="arHiSat" min="0" max="100" value="40"><span class="val" id="arHiSatV">40</span></div>
+        <div class="row"><span class="lbl">Glow</span><input type="range" id="arHiGlow" min="0" max="100" value="60"><span class="val" id="arHiGlowV">60</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">LEVEL → SYNTHESIS</div>
+        <div class="row"><span class="lbl">Hue</span><input type="range" id="arLevelHue" min="0" max="100" value="35"><span class="val" id="arLevelHueV">35</span></div>
+        <div class="row"><span class="lbl">Bright</span><input type="range" id="arLevelBright" min="0" max="100" value="20"><span class="val" id="arLevelBrightV">20</span></div>
+        <div class="row"><span class="lbl">Scanlines</span><input type="range" id="arLevelScan" min="0" max="100" value="40"><span class="val" id="arLevelScanV">40</span></div>
+      </div>
+    </div><!-- /tab-src -->
+    <!-- ═══ TAB: VISUAL ════════════════════════════════════ -->
+    <div class="tab-page" id="tab-vis">
+      <div class="sec">
+        <div class="sec-title">PRESETS</div>
+        <div id="currentPresetName">Acid Classic</div>
+        <select id="presetSel">
+          <optgroup label="Dark Acid">
+            <option value="acid_classic">Acid Classic</option>
+            <option value="neon_swamp">Neon Swamp</option>
+            <option value="liquid_metal">Liquid Metal</option>
+            <option value="void_warp">Void Warp</option>
+            <option value="neon_contour">Neon Contour</option>
+            <option value="deep_field">Deep Field</option>
+            <option value="pixel_storm">Pixel Storm</option>
+            <option value="iridescent">Iridescent</option>
+            <option value="slow_lava">Slow Lava</option>
+            <option value="mirror_acid">Mirror Acid</option>
+            <option value="ghost_circuit">Ghost Circuit</option>
+            <option value="blood_moon">Blood Moon</option>
+            <option value="oil_spill">Oil Spill</option>
+            <option value="digital_rain">Digital Rain</option>
+            <option value="black_hole">Black Hole</option>
+            <option value="quantum_foam">Quantum Foam</option>
+            <option value="solar_flare">Solar Flare</option>
+            <option value="crystal_acid">Crystal Acid</option>
+            <option value="fever_dream">Fever Dream</option>
+            <option value="acid_tunnel">Acid Tunnel</option>
+            <option value="wormhole">Wormhole</option>
+            <option value="vortex_pull">Vortex Pull</option>
+            <option value="stargate">Stargate</option>
+            <option value="hyperspace">Hyperspace</option>
+            <option value="aurora">Aurora</option>
+            <option value="iris_hole">Iris Hole</option>
+            <option value="kaleido_vortex">Kaleido Vortex</option>
+          </optgroup>
+          <optgroup label="Low Poly 3D">
+            <option value="lp_spheres">Sphere World</option>
+            <option value="lp_pyramids">Desert Pyramids</option>
+            <option value="lp_checker">Checker Arena</option>
+            <option value="lp_skull">Skull Scene</option>
+            <option value="lp_torus">Torus Space</option>
+            <option value="lp_multi">Multi Object</option>
+            <option value="lp_acid_blend">Acid + 3D Blend</option>
+            <option value="lp_palms">Palm Beach</option>
+            <option value="lp_phone">Phone Drop</option>
+            <option value="lp_city">City Block</option>
+            <option value="lp_crystal_cave">Crystal Cave</option>
+            <option value="lp_floating">Floating World</option>
+          </optgroup>
+          <optgroup label="Databend">
+          </optgroup>
+        </select>
+        <div class="btn-row" style="margin-top:6px">
+          <button class="btn" id="randBtn">RANDOMIZE</button>
+          <button class="btn" id="randGlitchBtn">RAND FX</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="savePresetBtn">SAVE</button>
+          <button class="btn" id="exportPresetBtn">EXPORT</button>
+          <label class="btn">IMPORT<input type="file" id="importPreset" accept=".json" style="display:none"></label>
+        </div>
+        <select id="savedSel" style="margin-top:3px"><option value="">— saved presets —</option></select>
+      </div>
+      <div class="sec">
+        <div class="sec-title">MATH NUKE</div>
+        <div class="btn-row">
+          <button class="btn nuke" id="nukeBtn">MATH NUKE</button>
+        </div>
+        <div class="row"><span class="lbl">Nuke Rate</span><input type="range" id="nukeRate" min="0" max="100" value="30"><span class="val" id="nukeRateV">30</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">FORMAT</div>
+        <select id="fmt">
+          <optgroup label="Landscape">
+            <option value="1920,1080" selected>1920×1080 HD</option>
+            <option value="2560,1440">2560×1440 2K</option>
+            <option value="3840,2160">3840×2160 4K</option>
+            <option value="1280,720">1280×720</option>
+          </optgroup>
+          <optgroup label="Portrait">
+            <option value="1080,1920">1080×1920 9:16</option>
+            <option value="1080,1350">1080×1350 4:5</option>
+          </optgroup>
+          <optgroup label="Square"><option value="1080,1080">1080×1080</option></optgroup>
+          <optgroup label="Cinematic">
+            <option value="1920,816">1920×816 2.35:1</option>
+            <option value="1920,960">1920×960 2:1</option>
+          </optgroup>
+        </select>
+        <div class="row" style="margin-top:6px">
+          <span class="lbl">Preview</span>
+          <input type="range" id="sc" min="10" max="100" value="95" step="5">
+          <span class="val" id="scV">95%</span>
+        </div>
+        <span id="sizeLabel" style="color:#00cc44;font-size:7.5px">1920×1080</span>
+      </div>
+      <div class="sec">
+        <div class="sec-title">SCENE MIX</div>
+        <div style="font-size:6.5px;color:#006a1a;font-family:'Orbitron',monospace;margin-bottom:6px">SCENE MODE SET BY PRESET</div>
+        <div class="row"><span class="lbl">Scene Mix</span><input type="range" id="sceneMix" min="0" max="100" value="100"><span class="val" id="sceneMixV">100</span></div>
+        <div class="row"><span class="lbl">Acid Mix</span><input type="range" id="acidMix" min="0" max="100" value="0"><span class="val" id="acidMixV">0</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">3D OBJECTS</div>
+        <div class="row"><span class="lbl">Type</span><input type="range" id="objType" min="0" max="8" value="0" step="1"><span class="val" id="objTypeV">0</span></div>
+        <div style="font-size:6.5px;color:#006a1a;font-family:'Orbitron',monospace;margin-bottom:5px">0=SPHERE 1=CUBE 2=PYRAMID 3=SKULL 4=TORUS 5=MULTI 6=PALM 7=PHONE 8=CITY</div>
+        <div class="row"><span class="lbl">Scale</span><input type="range" id="objScale" min="10" max="300" value="100"><span class="val" id="objScaleV">100</span></div>
+        <div class="row"><span class="lbl">Spin</span><input type="range" id="objSpin" min="0" max="100" value="40"><span class="val" id="objSpinV">40</span></div>
+        <div class="row"><span class="lbl">Count</span><input type="range" id="objCount" min="1" max="9" value="3" step="1"><span class="val" id="objCountV">3</span></div>
+        <div class="row"><span class="lbl">Bounce</span><input type="range" id="objBounce" min="0" max="100" value="60"><span class="val" id="objBounceV">60</span></div>
+        <div class="row"><span class="lbl">Floor</span><input type="range" id="floorOn" min="0" max="1" value="1" step="1"><span class="val" id="floorOnV">1</span></div>
+        <div class="row"><span class="lbl">Fog</span><input type="range" id="fogAmt" min="0" max="100" value="40"><span class="val" id="fogAmtV">40</span></div>
+        <div class="row"><span class="lbl">Env Type</span><input type="range" id="envType" min="0" max="4" value="0" step="1"><span class="val" id="envTypeV">0</span></div>
+        <div style="font-size:6.5px;color:#006a1a;font-family:'Orbitron',monospace;margin-bottom:5px">0=CHECKER 1=DESERT 2=OCEAN 3=SPACE 4=CAVE</div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">FIELD</div>
+        <div class="row"><span class="lbl">Speed</span><input type="range" id="sp" min="1" max="20" value="5"><span class="val" id="spV">5</span></div>
+        <div class="row"><span class="lbl">Warp</span><input type="range" id="wp" min="1" max="10" value="5"><span class="val" id="wpV">5</span></div>
+        <div class="row"><span class="lbl">Turbulence</span><input type="range" id="turb" min="0" max="20" value="6"><span class="val" id="turbV">6</span></div>
+        <div class="row"><span class="lbl">Zoom</span><input type="range" id="zm" min="1" max="300" value="25"><span class="val" id="zmV">25</span></div>
+        <div class="row"><span class="lbl">Rotate</span><input type="range" id="rot" min="0" max="100" value="0"><span class="val" id="rotV">0</span></div>
+        <div class="row"><span class="lbl">Pixel</span><input type="range" id="px" min="1" max="20" value="1"><span class="val" id="pxV">1</span></div>
+        <div class="row"><span class="lbl">Tunnel</span><input type="range" id="tunnelAmt" min="0" max="100" value="0"><span class="val" id="tunnelAmtV">0</span></div>
+        <div class="row"><span class="lbl">Tunnel Spd</span><input type="range" id="tunnelSpeed" min="0" max="100" value="50"><span class="val" id="tunnelSpeedV">50</span></div>
+        <div class="row"><span class="lbl">Frac Mode</span><input type="range" id="fracMode" min="0" max="5" value="0" step="1"><span class="val" id="fracModeV">0</span></div>
+        <div style="font-size:6.5px;color:#006a1a;font-family:'Orbitron',monospace;margin-bottom:5px">0=STD 1=RADIAL 2=SPIRAL 3=PULSE 4=KALEIDO 5=TWIST</div>
+        <div class="row"><span class="lbl">Irid Glass</span><input type="range" id="iridAmt" min="0" max="100" value="0"><span class="val" id="iridAmtV">0</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">COLOUR</div>
+        <div class="row"><span class="lbl">Chroma</span><input type="range" id="ch" min="0" max="20" value="6"><span class="val" id="chV">6</span></div>
+        <div class="row"><span class="lbl">Darkness</span><input type="range" id="dark" min="0" max="100" value="85"><span class="val" id="darkV">85</span></div>
+        <div class="row"><span class="lbl">Metallic</span><input type="range" id="metal" min="0" max="100" value="0"><span class="val" id="metalV">0</span></div>
+        <div class="row"><span class="lbl">Contour</span><input type="range" id="contour" min="0" max="100" value="20"><span class="val" id="contourV">20</span></div>
+        <div class="row"><span class="lbl">Bright</span><input type="range" id="br" min="0" max="300" value="90"><span class="val" id="brV">90</span></div>
+        <div class="row"><span class="lbl">Contrast</span><input type="range" id="ct" min="0" max="300" value="140"><span class="val" id="ctV">140</span></div>
+        <div class="row"><span class="lbl">Saturate</span><input type="range" id="sat" min="0" max="200" value="90"><span class="val" id="satV">90</span></div>
+        <div class="row"><span class="lbl">Hue Shift</span><input type="range" id="hs" min="0" max="100" value="0"><span class="val" id="hsV">0</span></div>
+        <div class="row"><span class="lbl">Hue Speed</span><input type="range" id="hspd" min="0" max="30" value="3"><span class="val" id="hspdV">3</span></div>
+        <div class="row"><span class="lbl">Glow</span><input type="range" id="glow" min="0" max="100" value="20"><span class="val" id="glowV">20</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">LOW POLY OVERLAY</div>
+        <div class="row"><span class="lbl">Blend</span><input type="range" id="polyBlend" min="0" max="100" value="0"><span class="val" id="polyBlendV">0</span></div>
+        <div class="row"><span class="lbl">Density</span><input type="range" id="polyDensity" min="1" max="100" value="40"><span class="val" id="polyDensityV">40</span></div>
+        <div class="row"><span class="lbl">Height</span><input type="range" id="polyHeight" min="0" max="100" value="50"><span class="val" id="polyHeightV">50</span></div>
+        <div class="row"><span class="lbl">Sharp</span><input type="range" id="polySharp" min="0" max="100" value="60"><span class="val" id="polySharpV">60</span></div>
+        <div class="row"><span class="lbl">Mode</span><input type="range" id="polyMode" min="0" max="3" value="0" step="1"><span class="val" id="polyModeV">0</span></div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">MIRROR</div>
+        <div class="btn-row">
+          <button class="btn" id="mirrorX">X AXIS</button>
+          <button class="btn" id="mirrorY">Y AXIS</button>
+          <button class="btn" id="mirrorR">RADIAL</button>
+        </div>
+      </div>
+    </div><!-- /tab-vis -->
+    <!-- ═══ TAB: FX ════════════════════════════════════════ -->
+    <div class="tab-page" id="tab-fx">
+      <div class="sec">
+        <div class="row"><span class="lbl">Amount</span><input type="range" id="glitchAmt" min="0" max="100" value="0"><span class="val" id="glitchAmtV">0</span></div>
+        <div class="row"><span class="lbl">Fluid Melt</span><input type="range" id="glitchFluid" min="0" max="100" value="70"><span class="val" id="glitchFluidV">70</span></div>
+        <div class="row"><span class="lbl">Field Fold</span><input type="range" id="glitchFold" min="0" max="100" value="50"><span class="val" id="glitchFoldV">50</span></div>
+        <div class="row"><span class="lbl">RGB Split</span><input type="range" id="glitchRGB" min="0" max="100" value="20"><span class="val" id="glitchRGBV">20</span></div>
+        <div class="row"><span class="lbl">Pixel Sort</span><input type="range" id="pixelSort" min="0" max="100" value="0"><span class="val" id="pixelSortV">0</span></div>
+        <div class="row"><span class="lbl">Scan Tear</span><input type="range" id="scanTear" min="0" max="100" value="0"><span class="val" id="scanTearV">0</span></div>
+        <div class="row"><span class="lbl">H-Sync</span><input type="range" id="hSync" min="0" max="100" value="0"><span class="val" id="hSyncV">0</span></div>
+        <div class="row"><span class="lbl">Bit Crush</span><input type="range" id="bitCrush" min="0" max="100" value="0"><span class="val" id="bitCrushV">0</span></div>
+        <div class="row"><span class="lbl">Frame Ghost</span><input type="range" id="frameGhost" min="0" max="100" value="0"><span class="val" id="frameGhostV">0</span></div>
+        <div class="row"><span class="lbl">Blk Corrupt</span><input type="range" id="blockCorrupt" min="0" max="100" value="0"><span class="val" id="blockCorruptV">0</span></div>
+        <div class="row"><span class="lbl">Pixel Smear</span><input type="range" id="datamosh" min="0" max="100" value="0"><span class="val" id="datamoshV">0</span></div>
+        <div class="row"><span class="lbl">Feedback</span><input type="range" id="feedbackAmt" min="0" max="100" value="0"><span class="val" id="feedbackAmtV">0</span></div>
+        <div class="row"><span class="lbl">Auto Rate</span><input type="range" id="glitchRate" min="0" max="100" value="30"><span class="val" id="glitchRateV">30</span></div>
+        <div class="btn-row">
+          <button class="btn" id="glitchTrigger">TRIGGER</button>
+          <button class="btn" id="glitchAutoBtn">AUTO</button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-title">BEAT FX</div>
+        <div class="row"><span class="lbl">Beat Warp</span><input type="range" id="beatWarp" min="0" max="100" value="50"><span class="val" id="beatWarpV">50</span></div>
+        <div class="row"><span class="lbl">Beat Zoom</span><input type="range" id="beatZoom" min="0" max="100" value="40"><span class="val" id="beatZoomV">40</span></div>
+      </div>
+    </div><!-- /tab-fx -->
+  </div><!-- /sb-body -->
+</div><!-- /sidebar -->
+<div id="botbar">
+  <div id="dot"></div>
+  <button class="btn red" id="recBtn">REC</button>
+  <button class="btn" id="stopBtn" disabled>STOP</button>
+  <button class="btn" id="snapBtn">PNG</button>
+  <div id="freqBar"><canvas id="freqCanvas"></canvas></div>
+</div>
+<script>
+const VERT=`precision mediump float;
+attribute vec2 aPos;varying vec2 vUV;
+void main(){vUV=(aPos+1.0)*0.5;gl_Position=vec4(aPos,0.0,1.0);}`;
+const FRAG=`
+precision highp float;
+varying vec2 vUV;
+uniform vec2 resolution;
+uniform float time;
+uniform float pixelSize;
+uniform float speed;
+uniform float warpAmt;
+uniform float turbulence;
+uniform float chromaAmt;
+uniform float darkness;
+uniform float metallic;
+uniform float contourAmt;
+uniform float zoom;
+uniform float rotation;
+uniform float brightness;
+uniform float contrast;
+uniform float saturation;
+uniform float hueOffset;
+uniform float mirrorX;
+uniform float mirrorY;
+uniform float mirrorR;
+uniform float glowAmt;
+uniform float sceneMode;
+uniform float sceneMix;
+uniform float acidMix;
+uniform float objType;
+uniform float objScale;
+uniform float objSpin;
+uniform float objCount;
+uniform float objBounce;
+uniform float floorOn;
+uniform float fogAmt;
+uniform float envType;
+uniform float tunnelAmt;
+uniform float tunnelSpeed;
+uniform float polyBlend;
+uniform float polyDensity;
+uniform float polyHeight;
+uniform float polySharp;
+uniform float polyMode;
+uniform float aBass;
+uniform float aMid;
+uniform float aHi;
+uniform float aLevel;
+uniform float arBassSpeed;
+uniform float arBassWarp;
+uniform float arBassZoom;
+uniform float arBassGlitch;
+uniform float arBassMetal;
+uniform float arBassObj;
+uniform float arMidTurb;
+uniform float arMidChroma;
+uniform float arMidContour;
+uniform float arMidContrast;
+uniform float arMidRotate;
+uniform float arMidFrac;
+uniform float arHiPixel;
+uniform float arHiGlitch;
+uniform float arHiRGB;
+uniform float arHiSat;
+uniform float arHiGlow;
+uniform float arLevelHue;
+uniform float arLevelBright;
+uniform float arLevelScan;
+uniform float glitchAmt;
+uniform float glitchPhase;
+uniform float glitchFluid;
+uniform float glitchVortex;
+uniform float glitchFold;
+uniform float glitchRGB;
+uniform float pixelSortAmt;
+uniform float scanTear;
+uniform float hSync;
+uniform float bitCrush;
+uniform float frameGhost;
+uniform float blockCorrupt;
+uniform float vhsNoise;
+uniform float datamoshAmt;
+uniform float feedbackAmt;
+uniform float beatPulse;
+uniform float beatWarp;
+uniform float beatZoom;
+uniform float fracMode;
+uniform float iridAmt;
+uniform sampler2D vidTex;
+uniform float vidMix;
+uniform float vidFX;
+uniform float vidActive;
+uniform float vLum;
+uniform float vR;
+uniform float vG;
+uniform float vB;
+uniform sampler2D specTex;
+#define TAU 6.28318530718
+#define PI 3.14159265359
+float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}
+float h1(float v){return fract(sin(v*127.1)*43758.5);}
+float sn(vec2 p){
+  vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);
+  return mix(mix(h2(i),h2(i+vec2(1,0)),u.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),u.x),u.y);
+}
+float fbm3(vec2 p){
+  float v=0.;
+  v+=.500*sn(p);p=p*2.09+vec2(1.7,3.2);
+  v+=.250*sn(p);p=p*2.09+vec2(3.1,1.6);
+  v+=.125*sn(p);return v/.875;
+}
+float fbmG(vec2 p,float gS,float gW,float gT){
+  float v=0.,t0=gT*.31;
+  v+=(.5+gW*.18)*sn(p+gS*vec2(.71,-.53)+vec2(t0,t0*.7));
+  p=p*2.09+vec2(1.7+gS*.8,3.2-gS*.5);
+  float t1=gT*.19;
+  v+=(.25+gW*.10)*sn(p+gS*vec2(-.47,.31)+vec2(-t1,t1*.9));
+  p=p*2.09+vec2(3.1,1.6+gS*.6);
+  float t2=gT*.11;
+  v+=(.125-gW*.05)*sn(p+gS*vec2(.23,-.17)+vec2(t2*.8,-t2));
+  p=p*2.09+vec2(2.3,4.1);
+  v+=.0625*sn(p+gS*vec2(-.11,.29));
+  return v/(.9375+gW*.23);
+}
+vec3 rgb2hsv(vec3 c){
+  vec4 K=vec4(0.,-1./3.,2./3.,-1.);
+  vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));
+  vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));
+  float d=q.x-min(q.w,q.y);
+  return vec3(abs(q.z+(q.w-q.y)/(6.*d+1e-10)),d/(q.x+1e-10),q.x);
+}
+vec3 hsv2rgb(vec3 c){
+  vec4 K=vec4(1.,2./3.,1./3.,3.);
+  return c.z*mix(K.xxx,clamp(abs(fract(c.xxx+K.xyz)*6.-K.www)-K.xxx,0.,1.),c.y);
+}
+mat2 rot2(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
+mat3 rotY(float a){float c=cos(a),s=sin(a);return mat3(c,0,s,0,1,0,-s,0,c);}
+mat3 rotX(float a){float c=cos(a),s=sin(a);return mat3(1,0,0,0,c,-s,0,s,c);}
+mat3 rotZ(float a){float c=cos(a),s=sin(a);return mat3(c,-s,0,s,c,0,0,0,1);}
+float sdSphere(vec3 p,float r){return length(p)-r;}
+float sdBox(vec3 p,vec3 b){vec3 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.);}
+float sdTorus(vec3 p,float r1,float r2){return length(vec2(length(p.xz)-r1,p.y))-r2;}
+float sdCylinder(vec3 p,float r,float h){vec2 d=abs(vec2(length(p.xz),p.y))-vec2(r,h);return min(max(d.x,d.y),0.)+length(max(d,0.));}
+float sdCone(vec3 p,float r,float h){vec2 q=vec2(length(p.xz),p.y);vec2 k1=vec2(r,h);vec2 k2=vec2(r-h,2.*h);vec2 ca=vec2(q.x-min(q.x,(q.y<0.)?r:r),abs(q.y)-h);vec2 cb=q-k1+k2*clamp(dot(k1-q,k2)/dot(k2,k2),0.,1.);float s=( cb.x<0. && ca.y<0.)?-1.:1.;return s*sqrt(min(dot(ca,ca),dot(cb,cb)));}
+float sdPyramid(vec3 p,float h){
+  float m2=h*h+.25;
+  p.xz=abs(p.xz);p.xz=(p.z>p.x)?p.zx:p.xz;p.xz-=.5;
+  vec3 q=vec3(p.z,h*p.y-.5*p.x,h*p.x+.5*p.y);
+  float s=max(-q.x,0.),t=clamp((q.y-.5*p.z)/(m2+.25),0.,1.);
+  float a=m2*(q.x+s)*(q.x+s)+q.y*q.y;
+  float b2=m2*(q.x+.5*t)*(q.x+.5*t)+(q.y-m2*t)*(q.y-m2*t);
+  return sqrt(min(a,b2)/m2)*sign(max(dot(q.yz,vec2(0.,1.)),dot(vec2(q.x,q.y),vec2(h,-.5))));
+}
+float sdSkull(vec3 p){
+  float skull=sdSphere(p-vec3(0.,.05,0.),.55);
+  float jaw=sdSphere(p-vec3(0.,-.35,.12),.3);
+  skull=min(skull,jaw);
+  float eyeL=sdSphere(p-vec3(-.18,.08,.48),.11);
+  float eyeR=sdSphere(p-vec3(.18,.08,.48),.11);
+  float nose=sdSphere(p-vec3(0.,-.08,.52),.09);
+  skull=max(skull,-eyeL);skull=max(skull,-eyeR);skull=max(skull,-nose);
+  return skull;
+}
+// Palm tree SDF: trunk (cylinder) + fronds (flattened spheres)
+float sdPalm(vec3 p,float t,float bass){
+  // Animated trunk with wind sway driven by audio
+  float sway=sin(t*.8)*0.06*(1.+bass*1.2)+sin(t*.5+p.y*1.8)*0.04;
+  float swayZ=cos(t*.6)*0.05*(1.+bass*.8);
+  vec3 pt=p;
+  pt.x+=sin(pt.y*1.5)*0.1+sway*pt.y;
+  pt.z+=cos(pt.y*1.2)*0.06+swayZ*pt.y;
+  float trunk=sdCylinder(pt,0.055,0.75);
+  // Coconuts at crown
+  vec3 pc=p-vec3(sway*0.5,0.72,swayZ*0.5);
+  float coconut1=sdSphere(pc-vec3(.08,-.05,.06),.07);
+  float coconut2=sdSphere(pc-vec3(-.06,-.03,.07),.065);
+  float coconut3=sdSphere(pc-vec3(.02,0.,-.08),.06);
+  float coconuts=min(coconut1,min(coconut2,coconut3));
+  // 6 animated fronds, droop + wave in wind
+  float fr=1000.;
+  for(int i=0;i<6;i++){
+    float ang=float(i)*TAU/6.+t*.15;
+    float droop=0.35+sin(t*.7+float(i)*1.1)*0.06*(1.+bass*.8);
+    float len=0.55+sin(t*.5+float(i)*0.8)*0.05;
+    vec3 frBase=pc+vec3(cos(ang)*0.12,0.02,sin(ang)*0.12);
+    vec3 frTip=pc+vec3(cos(ang)*len,droop*-1.+0.05,sin(ang)*len);
+    // Frond as elongated box oriented along frond direction
+    vec3 frDir=normalize(frTip-frBase);
+    vec3 frMid=(frBase+frTip)*.5;
+    vec3 pf=p-frMid;
+    // Rotate into frond local space
+    float ca2=cos(ang),sa2=sin(ang);
+    pf=vec3(ca2*pf.x+sa2*pf.z,pf.y,-sa2*pf.x+ca2*pf.z);
+    fr=min(fr,sdBox(pf,vec3(len*.48,.025+float(i)*.004,.055)));
+  }
+  return min(trunk,min(coconuts,fr));
+}
+// Smartphone SDF: thin rounded box with screen detail
+float sdPhone(vec3 p){
+  float body=sdBox(p,vec3(0.18,0.38,0.025));
+  // Round the edges
+  body-=0.012;
+  // Screen cutout as darker area (just additive geometry detail)
+  float screen=sdBox(p-vec3(0.,0.02,0.),vec3(0.14,0.3,0.015));
+  return min(body,screen);
+}
+// City block: multiple boxes of varying height
+float sdCityBlock(vec3 p){
+  float d=1000.;
+  // Several buildings
+  float bh1=0.6+h2(vec2(1.,2.))*.8;
+  float bh2=0.4+h2(vec2(3.,1.))*.6;
+  float bh3=0.8+h2(vec2(2.,3.))*.9;
+  d=min(d,sdBox(p-vec3(-.4,bh1*.5-.5,0.),vec3(0.18,bh1*.5,0.18)));
+  d=min(d,sdBox(p-vec3(.4,bh2*.5-.5,0.),vec3(0.15,bh2*.5,0.15)));
+  d=min(d,sdBox(p-vec3(0.,bh3*.5-.5,.3),vec3(0.12,bh3*.5,0.12)));
+  d=min(d,sdBox(p-vec3(0.,bh2*.3-.5,-.35),vec3(0.2,bh2*.3,0.2)));
+  return d;
+}
+float sdFloor(vec3 p){return p.y+0.6;}
+// Environment floor SDF varies by envType
+float envFloor(vec3 p,float env){
+  float base=p.y+0.6;
+  if(env<0.5){// checker - flat
+    return base;
+  } else if(env<1.5){// desert - sand dunes
+    float dune=sin(p.x*1.2)*0.12+sin(p.z*0.8+p.x*0.4)*0.08;
+    return p.y+0.6-dune;
+  } else if(env<2.5){// ocean - waves
+    float wave=sin(p.x*3.+time*2.)*0.06+sin(p.z*2.+time*1.5)*0.05;
+    return p.y+0.6-wave;
+  } else if(env<3.5){// space - no floor
+    return 1000.;
+  } else {// cave
+    float stalac=fbm3(p.xz*0.8)*0.3;
+    return p.y+0.6-stalac;
+  }
+}
+float objSDF(vec3 p,float t,float bass,float bounce){
+  float sc=objScale/100.*(1.+bass*arBassObj*.5+beatPulse*.25);
+  // Bounce: audio-driven vertical oscillation
+  float bAmt=bounce*(bass*arBassObj*.4+beatPulse*.35);
+  p.y-=bAmt*0.3;
+  p/=sc;
+  float spin=objSpin*.008*t*(1.+bass*.5);
+  int ot=int(objType+.5);
+  float d=1000.;
+  if(ot==0){d=sdSphere(p,.6);}
+  else if(ot==1){p=rotY(spin)*p;d=sdBox(p,vec3(0.5));}
+  else if(ot==2){p.xz=rot2(spin)*p.xz;d=sdPyramid(p+vec3(0.,.5,0.),1.);}
+  else if(ot==3){d=sdSkull(p);}
+  else if(ot==4){p=rotX(spin*.7)*rotY(spin)*p;d=sdTorus(p,.5,.18);}
+  else if(ot==5){
+    vec3 pa=p-vec3(sin(t*.3)*.7,sin(t*.25)*.2,0.);
+    vec3 pb=p-vec3(-.6,sin(t*.4)*.3,.3);
+    vec3 pc=p-vec3(.3,-.1,sin(t*.35)*.5);
+    d=min(sdSphere(pa,.35),min(sdBox(rotY(spin)*pb,vec3(.28)),sdPyramid(pc+vec3(0.,.35,0.),.8)));
+  }
+  else if(ot==6){// Palm
+    p=rotY(spin*0.3)*p;
+    d=sdPalm(p,t,bass);
+  }
+  else if(ot==7){// Phone
+    p=rotY(spin)*rotX(spin*0.3)*p;
+    d=sdPhone(p);
+  }
+  else{// City block
+    d=sdCityBlock(p);
+  }
+  return d*sc;
+}
+vec3 objNormal(vec3 p,float t,float bass,float bounce){
+  vec2 e=vec2(.002,0.);
+  return normalize(vec3(objSDF(p+e.xyy,t,bass,bounce)-objSDF(p-e.xyy,t,bass,bounce),
+                        objSDF(p+e.yxy,t,bass,bounce)-objSDF(p-e.yxy,t,bass,bounce),
+                        objSDF(p+e.yyx,t,bass,bounce)-objSDF(p-e.yyx,t,bass,bounce)));
+}
+float sceneSDF(vec3 p,float t,float bass,float bounce){
+  float d=objSDF(p,t,bass,bounce);
+  if(floorOn>.5)d=min(d,envFloor(p,envType));
+  return d;
+}
+vec3 sceneNormal(vec3 p,float t,float bass,float bounce){
+  vec2 e=vec2(.002,0.);
+  return normalize(vec3(sceneSDF(p+e.xyy,t,bass,bounce)-sceneSDF(p-e.xyy,t,bass,bounce),
+                        sceneSDF(p+e.yxy,t,bass,bounce)-sceneSDF(p-e.yxy,t,bass,bounce),
+                        sceneSDF(p+e.yyx,t,bass,bounce)-sceneSDF(p-e.yyx,t,bass,bounce)));
+}
+// Environment background color
+vec3 envBackground(vec2 puv,vec3 rd,float t,float hue,float env,float bass){
+  if(env<0.5){// checker - dark studio
+    float skyG=puv.y;
+    vec3 skyA=hsv2rgb(vec3(fract(hue+.6),.8,.06+bass*.05));
+    vec3 skyB=hsv2rgb(vec3(fract(hue+.55),.5,.02));
+    vec3 bg=mix(skyB,skyA,skyG);
+    vec2 starUV=rd.xy/max(abs(rd.z),.001)*1.5;
+    float star=step(.992,h2(floor(starUV*60.)+floor(t*.003)));
+    bg+=star*vec3(.8,.9,1.)*.7*(1.-bass*.5);
+    return bg;
+  } else if(env<1.5){// desert - sand + horizon haze
+    float h=clamp(rd.y*3.+.5,0.,1.);
+    vec3 sky=hsv2rgb(vec3(0.55,.5,.4+h*.4));
+    vec3 horizon=hsv2rgb(vec3(0.08,.3,.8));
+    vec3 sand=hsv2rgb(vec3(0.1,.4,.6));
+    vec3 bg=mix(sand,mix(horizon,sky,h),clamp(rd.y*8.,0.,1.));
+    // Sun disk
+    float sun=max(0.,dot(rd,normalize(vec3(.4,.6,.7))));
+    bg+=pow(sun,60.)*vec3(1.,.9,.4)*2.;
+    bg+=pow(sun,4.)*vec3(1.,.7,.2)*.3;
+    return bg;
+  } else if(env<2.5){// ocean - blue sky + water
+    float h2v=clamp(rd.y,0.,1.);
+    vec3 skyC=mix(vec3(.4,.6,1.),vec3(.1,.2,.6),1.-h2v);
+    vec3 oceanC=mix(vec3(.02,.08,.18),vec3(.1,.3,.5),h2v*.3);
+    vec3 bg=rd.y>0.?skyC:oceanC;
+    // Clouds
+    float cloud=sn(vec2(rd.x,rd.z)*3.+t*.05);
+    bg=mix(bg,vec3(.9,.95,1.),clamp(cloud*.5+rd.y*.4,0.,1.)*.4);
+    return bg;
+  } else if(env<3.5){// space - stars + nebula
+    vec3 bg=vec3(0.005,0.,0.015);
+    vec2 starUV=rd.xy/max(abs(rd.z),.001);
+    float st=step(.985,h2(floor(starUV*80.)+floor(t*.001)));
+    bg+=st*vec3(.9,.95,1.)*1.2;
+    // Nebula haze
+    float neb=fbm3(rd.xy*2.+rd.z);
+    bg+=hsv2rgb(vec3(fract(hue+neb*.3),.8,neb*.3))*neb*.4;
+    return bg;
+  } else {// cave - dark rocky
+    float rockN=fbm3(rd.xy*4.+rd.z*2.);
+    vec3 bg=hsv2rgb(vec3(fract(hue+rockN*.1),.3,.04+rockN*.08));
+    // Crystal glow points
+    float cryst=step(.97,h2(floor(rd.xy*40.)+floor(t*.002)));
+    bg+=cryst*hsv2rgb(vec3(fract(hue+.3),.9,1.))*1.5;
+    return bg;
+  }
+}
+// Environment floor shading
+vec3 shadeFloor(vec3 pos,float t,float env,float hue,float bass,float aMid2){
+  if(env<0.5){// checker
+    float fu=mod(floor(pos.x*1.5)+floor(pos.z*1.5),2.);
+    vec3 c1=vec3(.18+fu*.18);
+    vec3 c2=vec3(.04+fu*.04);
+    return mix(c2,c1,fu)*(.5+bass*.3);
+  } else if(env<1.5){// desert sand
+    float grain=sn(pos.xz*8.+t*.1)*.15;
+    return hsv2rgb(vec3(0.1,.35+grain,.55+grain))*(0.5+aMid2*.4+bass*.2);
+  } else if(env<2.5){// ocean water
+    float wave=sin(pos.x*4.+t*2.)*.1+sin(pos.z*3.+t*1.5)*.1;
+    vec3 waterC=hsv2rgb(vec3(fract(hue+.6),.7,.2+wave*.5+bass*.3));
+    return waterC;
+  } else if(env<3.5){// space - no floor rendered
+    return vec3(0.);
+  } else {// cave floor
+    float rock=fbm3(pos.xz*2.);
+    return hsv2rgb(vec3(fract(hue+rock*.2),.4,.15+rock*.2))*(0.4+bass*.3);
+  }
+}
+vec3 shade3D(vec3 pos,vec3 N,vec3 rd,float t,float bass,float hue,bool isFloor){
+  vec3 L1=normalize(vec3(1.2+sin(t*.25),.9+cos(t*.2),1.));
+  vec3 L2=normalize(vec3(-.7,.5,.6));
+  float diff1=max(dot(N,L1),0.);
+  float diff2=max(dot(N,L2),0.)*.35;
+  float spec1=pow(max(dot(reflect(-L1,N),-rd),0.),28.+metallic*60.)*1.8;
+  float spec2=pow(max(dot(reflect(-L2,N),-rd),0.),12.)*.5;
+  float rim=pow(1.-max(dot(N,-rd),0.),3.);
+  if(isFloor){
+    return shadeFloor(pos,t,envType,hue,bass,aMid);
+  }
+  // Object shading with checker texture
+  vec3 texP=pos*2.5;
+  float check=mod(floor(texP.x)+floor(texP.y)+floor(texP.z),2.);
+  float objH=fract(hue+h2(vec2(objType+check,floor(t*.08)))*0.5+t*.018);
+  vec3 baseCol=hsv2rgb(vec3(objH,.85-bass*.15,.55+bass*.35));
+  vec3 altCol =hsv2rgb(vec3(fract(objH+.35),.8,.7));
+  baseCol=mix(baseCol,altCol,check*.45);
+  vec3 envCol =hsv2rgb(vec3(fract(objH+.5),.7,1.));
+  vec3 col=baseCol*(diff1+diff2+.15)+envCol*(spec1*.9+spec2*.4);
+  col+=envCol*rim*.5;
+  col*=1.+bass*arBassObj*.5+beatPulse*.35;
+  if(vidActive>.5){
+    vec3 vidSurf=hsv2rgb(vec3(fract(hue+vR*.8-vB*.4),clamp(vG*1.5,.3,1.),clamp(vLum*1.8,.2,1.)));
+    col=mix(col,col*vidSurf*1.5,vidMix*0.6);
+    col+=envCol*spec1*vLum*vidMix*1.2;
+  }
+  return col;
+}
+vec3 renderCGI(vec2 puv,float t,float bass,float hue,float bounce){
+  float camZ=2.8+sin(t*.12)*.5*(1.+bass*.4);
+  vec3 ro=vec3(0.,.05,camZ);
+  float aspect=resolution.x/resolution.y;
+  vec2 sc=(puv-.5)*vec2(aspect,1.);
+  vec3 rd=normalize(vec3(sc,-1.2));
+  float camYaw =sin(t*.07)*.25+bass*.08*arBassSpeed*.01;
+  float camPitch=sin(t*.055)*.12+aMid*.04*arMidRotate*.01;
+  rd=rotY(camYaw)*rd;rd=rotX(camPitch)*rd;ro=rotY(camYaw)*ro;ro=rotX(camPitch)*ro;
+  vec3 bg=envBackground(puv,rd,t,hue,envType,bass);
+  if(vidActive>.5){
+    vec2 vidBgUV=vec2(atan(rd.x,rd.z)/(TAU)+.5,rd.y*.5+.5);
+    vidBgUV.x=fract(vidBgUV.x+t*.005);
+    vec3 vidBg=texture2D(vidTex,clamp(vidBgUV,0.,1.)).rgb;
+    vec3 vhBg=rgb2hsv(vidBg);
+    vhBg.x=fract(vhBg.x+hueOffset+t*.008);
+    vidBg=hsv2rgb(vhBg);
+    bg=mix(bg,vidBg*(.3+bass*.4),vidMix*0.8);
+  }
+  float dist=0.;bool hit=false;
+  for(int i=0;i<96;i++){
+    vec3 p=ro+rd*dist;
+    float d=sceneSDF(p,t,bass,bounce);
+    if(d<.002){hit=true;break;}
+    dist+=d;if(dist>30.)break;
+  }
+  if(!hit)return bg;
+  vec3 pos=ro+rd*dist;
+  vec3 N=sceneNormal(pos,t,bass,bounce);
+  bool isFloor=(floorOn>.5&&envType<3.5&&abs(sceneSDF(pos,t,bass,bounce)-envFloor(pos,envType))<.01);
+  vec3 col=shade3D(pos,N,rd,t,bass,hue,isFloor);
+  if(vidActive>.5&&!isFloor){
+    vec2 sphereUV=vec2(atan(N.x,N.z)/(TAU)+.5,N.y*.5+.5);
+    sphereUV.x=fract(sphereUV.x+t*.01+bass*.05);
+    vec3 vidSurf=texture2D(vidTex,sphereUV).rgb;
+    vec3 vhS=rgb2hsv(vidSurf);
+    vhS.x=fract(vhS.x+hueOffset+vLum*.3);
+    vhS.y=clamp(vhS.y*1.4,0.,1.);
+    vidSurf=hsv2rgb(vhS);
+    float specMask=clamp(dot(N,-rd)*.5+.5,0.,1.);
+    col=mix(col,col*vidSurf*1.8,vidMix*specMask*0.7);
+  }
+  float fog=exp(-dist*fogAmt*.008);
+  vec3 fogCol=envBackground(puv,vec3(0.,0.,-1.),t,hue,envType,bass)*.3;
+  col=mix(fogCol,col,fog);
+  vec3 L1=normalize(vec3(1.2+sin(t*.25),.9,.8));
+  vec3 shadowP=pos+N*.02;float sd2=0.;
+  for(int j=0;j<24;j++){
+    vec3 sp=shadowP+L1*sd2;
+    float sf=sceneSDF(sp,t,bass,bounce);
+    if(sf<.003){col*=.45;break;}
+    sd2+=sf;if(sd2>4.)break;
+  }
+  // Floor reflection: re-march upward from floor hit
+  if(isFloor&&floorOn>.5&&fogAmt<80.){
+    vec3 reflDir=reflect(rd,N);
+    float reflDist=0.;
+    vec3 reflCol=vec3(0.);
+    bool reflHit=false;
+    for(int ri=0;ri<48;ri++){
+      vec3 rp=pos+reflDir*reflDist;
+      float rd2=objSDF(rp,t,bass,bounce);
+      if(rd2<.003){reflHit=true;break;}
+      reflDist+=rd2;if(reflDist>8.)break;
+    }
+    if(reflHit){
+      vec3 rPos=pos+reflDir*reflDist;
+      vec3 rN=objNormal(rPos,t,bass,bounce);
+      reflCol=shade3D(rPos,rN,reflDir,t,bass,hue,false);
+    } else {
+      reflCol=envBackground(puv,reflDir,t,hue,envType,bass)*.5;
+    }
+    float reflStrength=clamp(.4-fogAmt*.004,0.,.4)*(1.-abs(dot(rd,N)));
+    col=mix(col,reflCol,reflStrength);
+  }
+  return col;
+}
+// ── TUNNEL EFFECT ──────────────────────────────────────────────
+vec2 tunnelUV(vec2 uv,float tAmt,float tSpd,float tBase,float bass){
+  if(tAmt<.01)return uv;
+  vec2 c=uv-.5;
+  float r=length(c);
+  float angle=atan(c.y,c.x);
+  // Tunnel z-depth from radius
+  float z=1./(r+.01)*tAmt*.15;
+  float tTime=tBase*tSpd*.04+bass*.1;
+  // Forward motion: shrinking rings = being pulled in
+  float u2=angle/TAU;
+  float v2=fract(z-tTime);
+  // Twist
+  float twist=tAmt*.5*sin(tBase*.2)*r;
+  u2=fract(u2+twist);
+  return mix(uv,vec2(u2,v2),tAmt);
+}
+vec3 renderAcid(vec2 p,float tBase,float gS,float gW,float gT,float str,
+                float effTurb,float effCh,float effRGB2,float effHue,
+                float effContour,float effMetal,float effG,float effDark,float effSat){
+  vec2 q=vec2(fbmG(p+vec2(tBase*.38,tBase*.27),gS,gW,gT),
+              fbmG(p+vec2(tBase*.29,tBase*.44)+1.73,gS*.75,gW*.65,gT*.8));
+  vec2 r=vec2(fbmG(p+str*q+vec2(tBase*.21,tBase*.16)+5.2,gS*.52,gW*.48,gT*.6),
+              fbmG(p+str*q+vec2(tBase*.18,tBase*.25)+8.3,gS*.33,gW*.28,gT*.4));
+  if(effTurb>.01){
+    vec2 s2=vec2(fbmG(p*1.5+str*1.1*r+vec2(tBase*.14,tBase*.10),gS*.38,gW*.35,gT*.3),
+                 fbmG(p*1.5+str*1.1*r+vec2(tBase*.11,tBase*.16)+3.1,gS*.22,gW*.19,gT*.2));
+    r=mix(r,s2,effTurb);
+  }
+  float tR=tBase+gT*.28,tG=tBase,tB=tBase-gT*.22;
+  float chromaStr=effCh*.0018+effRGB2*.007*(1.+sin(glitchPhase*TAU*1.6)*.5);
+  vec2 wD=normalize(r+vec2(.0011));
+  float rOff=fbm3(p*.5+vec2(tBase*.04,tBase*.03))*TAU;
+  vec2 sv=mix(wD,vec2(cos(rOff),sin(rOff)),.4)*chromaStr;
+  vec2 pR=p+sv,pG=p,pB=p-sv;
+  if(pixelSortAmt>.01){
+    float sf=fbm3(p*3.2+vec2(glitchPhase*.14));
+    if(sf>1.-pixelSortAmt*.55){float mag=(sf-(1.-pixelSortAmt*.55))/(pixelSortAmt*.55+.001)*.20;pR.x=fract(pR.x+mag);pB.x=fract(pB.x-mag);}
+    float sfV=fbm3(p*2.8+vec2(glitchPhase*.09)+5.5);
+    if(sfV>1.-pixelSortAmt*.4){float mag2=(sfV-(1.-pixelSortAmt*.4))/(pixelSortAmt*.4+.001)*.15;pG.y=fract(pG.y+mag2*(aMid*.5+.5));}
+  }
+  float fR=fbmG(pR+str*r+vec2(tR*.11,tR*.08),gS*.42,gW*.38,gT*.5);
+  float fG=fbmG(pG+str*r+vec2(tG*.09,tG*.13),gS*.28,gW*.25,gT*.35);
+  float fB=fbmG(pB+str*r+vec2(tB*.13,tB*.07),gS*.18,gW*.15,gT*.22);
+  if(frameGhost>.01){
+    float g1=tBase-frameGhost*.12,g2=tBase+frameGhost*.09;
+    vec2 qG=vec2(fbmG(p+vec2(g1*.38,g1*.27),gS*.5,gW*.5,gT*.5),fbmG(p+vec2(g1*.29,g1*.44)+1.73,gS*.4,gW*.35,gT*.4));
+    vec2 rG=vec2(fbmG(p+str*qG+vec2(g1*.21,g1*.16)+5.2,gS*.3,gW*.3,gT*.3),fbmG(p+str*qG+vec2(g1*.18,g1*.25)+8.3,gS*.2,gW*.2,gT*.2));
+    fR=mix(fR,fbmG(pR+str*rG+vec2(g1*.11,g1*.08),gS*.3,gW*.3,gT*.35)*.6+fbmG(pR+str*rG+vec2(g2*.11,g2*.08),gS*.3,gW*.3,gT*.35)*.4,frameGhost*.35);
+    fG=mix(fG,fbmG(pG+str*rG+vec2(g1*.09,g1*.13),gS*.2,gW*.2,gT*.25),frameGhost*.28);
+    fB=mix(fB,fbmG(pB+str*rG+vec2(g1*.13,g1*.07),gS*.1,gW*.1,gT*.15),frameGhost*.2);
+  }
+  float ph=tBase*.07+fbm3(p*.3+vec2(tBase*.04))*.5+effHue+aLevel*.09
+           +vR*vidActive*.12-vB*vidActive*.08;
+  float ps=gS*.12+vG*vidActive*.06;
+  vec4 K=vec4(1.,2./3.,1./3.,3.);
+  vec3 ppR=abs(fract((fR*.55+ph+ps)+K.xyz)*6.-K.www);
+  vec3 ppG=abs(fract((fG*.55+ph )+K.xyz)*6.-K.www);
+  vec3 ppB=abs(fract((fB*.55+ph-ps-.04)+K.xyz)*6.-K.www);
+  float fvR=.7+.3*sin(fR*TAU*2.),fvG=.7+.3*sin(fG*TAU*2.),fvB=.7+.3*sin(fB*TAU*2.);
+  vec3 col=vec3(fvR*mix(K.xxx,clamp(ppR-K.xxx,0.,1.),.95).r,
+                fvG*mix(K.xxx,clamp(ppG-K.xxx,0.,1.),.95).g,
+                fvB*mix(K.xxx,clamp(ppB-K.xxx,0.,1.),.95).b);
+  col+=vec3(pow(1.-abs(fR*2.-1.),5.),pow(1.-abs(fG*2.-1.),5.),pow(1.-abs(fB*2.-1.),5.))*.8;
+  float lum=dot(col,vec3(.299,.587,.114));
+  col*=smoothstep(0.,.45,lum)*1.6;
+  col*=smoothstep(effDark*.55,effDark*.55+.18,lum);
+  if(effContour>.01){
+    float cf=fbm3(p+str*.9*r+vec2(tBase*.07,tBase*.05));
+    float cV=abs(sin(cf*mix(5.,32.,effContour)*PI));
+    float cL=pow(1.-cV,mix(2.,10.,effContour));
+    vec3 cC1=hsv2rgb(vec3(fract(effHue+cf*.35+tBase*.012),1.,1.));
+    vec3 cC2=hsv2rgb(vec3(fract(effHue+cf*.35+tBase*.012+.55),.7,.15));
+    col=mix(col,col+(mix(cC2,cC1,cL)*cL+cC1*pow(1.-cV,mix(1.,4.,effContour))*.4),effContour*1.2);
+  }
+  if(effMetal>.01){
+    float eps=.005;vec2 dw=str*r;
+    float fxm=fbm3(pG-vec2(eps,0)+dw+vec2(tBase*.09,tBase*.13));
+    float fxp=fbm3(pG+vec2(eps,0)+dw+vec2(tBase*.09,tBase*.13));
+    float fym=fbm3(pG-vec2(0,eps)+dw+vec2(tBase*.09,tBase*.13));
+    float fyp=fbm3(pG+vec2(0,eps)+dw+vec2(tBase*.09,tBase*.13));
+    vec3 nm=normalize(vec3((fxm-fxp)*100.,(fym-fyp)*100.,1.2+effMetal));
+    vec3 Lm=normalize(vec3(.5+sin(tBase*.25)*.3,.7+cos(tBase*.18)*.2,.9));
+    float dm=max(dot(nm,Lm),0.)+.3;
+    float sm=pow(max(dot(reflect(-Lm,nm),vec3(0,0,1)),0.),32.+effMetal*120.);
+    vec3 mb=hsv2rgb(vec3(fract(effHue+fG*.25+tBase*.015),.75-effMetal*.3,.45));
+    col=mix(col,(mb*dm+vec3(sm))*1.3,effMetal);
+  }
+  col*=.7+.3*(1.-smoothstep(.3,1.,length(p/.75-.67)*1.7));
+  if(effG>.04){
+    float ms=fbm3(p*1.9+vec2(glitchPhase*.33));
+    if(ms>1.-effG*.38){float mst=(ms-(1.-effG*.38))/(1.-effG*.38+.001);vec3 mh=rgb2hsv(col);mh.x=fract(mh.x+mst*.55*effG);mh.y=clamp(mh.y*(1.+mst*effG*.4),0.,1.);col=mix(col,hsv2rgb(mh),mst*effG*.75);}
+  }
+  return col;
+}
+// ── GLITCH UV OPERATORS ────────────────────────────────────────
+vec2 hSyncDistort(vec2 uv,float ph,float amt,float bass){
+  float lY=floor(uv.y*resolution.y);
+  // Several rolling desync bands
+  for(int bi=0;bi<3;bi++){
+    float barPos=fract(ph*.11*(float(bi)+1.)+bass*.18+float(bi)*.37);
+    float barW=mix(.02,.12,amt)*(1.-float(bi)*.25);
+    float dist=abs(fract(uv.y-barPos+.5)-.5);
+    float inBar=1.-smoothstep(0.,barW*.5,dist);
+    float shift=inBar*amt*(h1(lY*.1+ph+float(bi)*3.7)-.5)*.18*(1.+bass*.8);
+    uv.x=fract(uv.x+shift);
+  }
+  return uv;
+}
+vec2 scanTearUV(vec2 uv,float ph,float amt,float bass){
+  float lY=uv.y*resolution.y;
+  float tId=floor(lY/mix(1.,18.,amt));
+  float tR=h1(tId+floor(ph*8.)*13.7);float tR2=h1(tId*3.1+floor(ph*5.)*7.3);
+  float tStr=amt*(.5+bass*1.5);
+  if(tR>1.-tStr*.6)uv.x=fract(uv.x+(tR-(1.-tStr*.6))/(tStr*.6+.001)*(tR2-.5)*.35);
+  float bY=floor(uv.y*mix(8.,30.,amt));
+  float bR=h1(bY*2.7+floor(ph*3.)*5.1);
+  if(bR>1.-amt*.4)uv.x=fract(uv.x+(bR-(1.-amt*.4))/(amt*.4+.001)*.12*(h1(bY)-.5));
+  return uv;
+}
+vec2 blockCorruptUV(vec2 uv,float ph,float amt){
+  float bsz=mix(.05,.28,amt);vec2 bI=floor(uv/bsz);
+  float bR=h2(bI+floor(ph*4.)*vec2(2.3,1.7));
+  if(bR>1.-amt*.55)uv=vec2(h2(bI*3.1+vec2(1.7,ph)),h2(bI*2.3+vec2(ph,2.1)));
+  return uv;
+}
+// TRUE VORTEX: spiral distortion centered at a point
+vec2 vortexDistort(vec2 uv,float ph,float amt,float bass){
+  if(amt<.01)return uv;
+  // Two counter-rotating vortex centers
+  vec2 c1=vec2(.5+sin(ph*.63)*.25,.5+cos(ph*.39)*.2);
+  vec2 c2=vec2(.5+cos(ph*.51)*.22,.5+sin(ph*.77)*.18);
+  vec2 d1=uv-c1;
+  float r1=length(d1);
+  float str1=amt*(1.+bass*2.)*exp(-r1*r1*3.5)*TAU*1.2;
+  float ca1=cos(str1),sa1=sin(str1);
+  uv=vec2(ca1*d1.x-sa1*d1.y,sa1*d1.x+ca1*d1.y)+c1;
+  vec2 d2=uv-c2;
+  float r2=length(d2);
+  float str2=amt*(1.+bass*1.5)*exp(-r2*r2*3.5)*TAU*.9;
+  float ca2=cos(-str2),sa2=sin(-str2);
+  uv=vec2(ca2*d2.x-sa2*d2.y,sa2*d2.x+ca2*d2.y)+c2;
+  return clamp(uv,0.,1.);
+}
+// DATAMOSH: displaces pixels by motion-vector-like offsets
+vec2 datamoshUV(vec2 uv,float ph,float amt,float bass){
+  if(amt<.01)return uv;
+  float mx=fbm3(uv*2.+vec2(ph*.3,ph*.2))-.5;
+  float my=fbm3(uv*2.+vec2(ph*.2+3.1,ph*.25))-.5;
+  float str=amt*(0.12+bass*.18);
+  return clamp(uv+vec2(mx,my)*str,0.,1.);
+}
+float vhsGrain(vec2 uv,float ph,float amt){
+  return (h2(floor(uv*resolution)+vec2(ph*97.,ph*61.))*2.-1.)*amt*.22;
+}
+vec3 crushBits(vec3 col,float amt){
+  float bits=mix(256.,2.,amt);
+  return floor(col*bits+.5)/bits;
+}
+void main(){
+  float va=vidActive;
+  float srcBass=clamp(aBass+vLum*va*1.2,0.,1.);
+  float srcMid=clamp(aMid+vG*va*1.0,0.,1.);
+  float srcHi=clamp(aHi+vB*va*0.9,0.,1.);
+  float srcLevel=clamp(aLevel+vLum*va*0.8,0.,1.);
+  float srcR=clamp(vR*va+aBass*0.3,0.,1.);
+  float srcColor=clamp(srcMid+srcHi*0.5,0.,1.);
+  float effSpeed=speed*(1.+srcBass*arBassSpeed*.55+srcLevel*.2+beatPulse*.3);
+  float effWarp=warpAmt*(1.+srcBass*arBassWarp*.45+beatPulse*(0.15+beatWarp*.003));
+  float effZoom=zoom*(1.+srcBass*arBassZoom*.35+beatPulse*(0.06+beatZoom*.004));
+  float effMetal=clamp(metallic/100.+srcBass*arBassMetal*.04+srcR*.03,0.,1.);
+  float effTurb=clamp(turbulence/20.+srcMid*(arMidTurb+arMidFrac)*.018+srcColor*.012,0.,1.);
+  float effCh=chromaAmt+srcMid*arMidChroma*.6+srcColor*.4+srcBass*.3;
+  float effContour=clamp(contourAmt+srcMid*arMidContour*.06+vG*va*.04+srcBass*.02,0.,1.);
+  float effContr=contrast*(1.+srcMid*arMidContrast*.025+srcLevel*.018);
+  float effRot=rotation+srcMid*arMidRotate*.035+srcR*.025+srcBass*.015;
+  float effPixel=pixelSize+srcHi*arHiPixel*.35+srcBass*.3;
+  float effSat=saturation*(1.+srcHi*arHiSat*.025+srcColor*.02);
+  float effHue=hueOffset+srcLevel*arLevelHue*.018+vR*va*.08+srcBass*.015;
+  float effBright=brightness*(1.+srcLevel*arLevelBright*.025+vLum*va*.02);
+  float effG=clamp(glitchAmt+srcBass*arBassGlitch*.015+srcHi*arHiGlitch*.01,0.,.95);
+  float effRGB2=glitchRGB/100.+srcHi*arHiRGB*.005+vB*va*.008;
+  float effGlow=glowAmt*(1.+srcHi*arHiGlow*.05+srcLevel*.04+vLum*va*.03);
+  float effDark=clamp(darkness/100.-srcLevel*.08-srcBass*.04,0.,1.);
+  float effBounce=objBounce/100.;
+  float ps=max(effPixel,1.);
+  vec2 blockIdx=floor(vUV*resolution/ps);
+  vec2 blockCenter=(blockIdx+.5)*ps/resolution;
+  vec2 uv=blockCenter;
+  // ── GLITCH CHAIN ──────────────────────────────────────────
+  if(hSync>.005)uv=hSyncDistort(uv,glitchPhase,hSync,aBass);
+  if(scanTear>.005)uv=scanTearUV(uv,glitchPhase,scanTear,srcBass);
+  if(blockCorrupt>.005)uv=blockCorruptUV(uv,glitchPhase,blockCorrupt);
+  // TRUE VORTEX (now actually works as spiral distortion)
+  if(effG>.005&&glitchVortex>.01)uv=vortexDistort(uv,glitchPhase,effG*glitchVortex*.012,srcBass);
+  // Datamosh
+  if(datamoshAmt>.005)uv=datamoshUV(uv,glitchPhase,datamoshAmt,srcBass);
+  // Fluid field melt
+  if(effG>.005){
+    float fN=effG*glitchFluid*.05;
+    vec2 gp=uv*3.1+vec2(glitchPhase*.19,glitchPhase*.13);
+    uv+=vec2((fbm3(gp+vec2(glitchPhase*.55,.09))-.5)*(1.+srcBass*1.8),
+             (fbm3(gp+vec2(.17,glitchPhase*.55)+4.3)-.5)*(1.+srcHi*1.5))*fN;
+  }
+  // Domain fold
+  if(effG>.01&&glitchFold>.01){
+    // Tile-mirror fold: subdivide screen into blocks, randomly flip/swap tiles
+    float famt=clamp(effG*glitchFold,0.,1.);
+    float bsz=mix(.5,.08,famt); // block size: large at low, small at high
+    vec2 tileId=floor(uv/bsz);
+    float tr=h2(tileId+floor(glitchPhase*3.)*vec2(2.1,1.7));
+    float tr2=h2(tileId*1.7+floor(glitchPhase*2.3)*vec2(1.3,2.9));
+    vec2 tileUV=fract(uv/bsz);
+    if(tr>1.-famt*.55){
+      // Horizontal mirror in this tile
+      tileUV.x=1.-tileUV.x;
+    }
+    if(tr2>1.-famt*.45){
+      // Vertical mirror in this tile
+      tileUV.y=1.-tileUV.y;
+    }
+    // Occasional full tile swap
+    if(tr>1.-famt*.25&&tr2>1.-famt*.25){
+      tileUV=vec2(tileUV.y,tileUV.x);
+    }
+    uv=clamp(tileId*bsz+tileUV*bsz,0.,1.);
+  }
+  // Feedback warp
+  if(feedbackAmt>.005){
+    vec2 fc=uv-.5;
+    float fScale=1.+feedbackAmt*.04*(1.+srcBass*.5);
+    uv=fc/fScale+.5;
+    uv=fract(uv+vec2(fbm3(uv*3.+glitchPhase*.2)-.5,fbm3(uv*3.+glitchPhase*.2+5.5)-.5)*feedbackAmt*.02);
+  }
+  // ── MIRROR ─────────────────────────────────────────────────
+  vec2 uvM=uv;
+  if(mirrorX>.5)uvM.x=abs(uvM.x*2.-1.);
+  if(mirrorY>.5)uvM.y=abs(uvM.y*2.-1.);
+  if(mirrorR>.5){vec2 c2=uvM-.5;float a=atan(c2.y,c2.x),r2=length(c2);float sec=6.;a=mod(a,TAU/sec);if(a>TAU/sec*.5)a=TAU/sec-a;uvM=vec2(cos(a),sin(a))*r2+.5;}
+  // ── TUNNEL ─────────────────────────────────────────────────
+  if(tunnelAmt>.01){
+    float effTunSpd=tunnelSpeed/50.*(1.+srcBass*arBassSpeed*.3);
+    uvM=tunnelUV(uvM,tunnelAmt/100.,effTunSpd,time*speed*.024,srcBass);
+  }
+  // ── ZOOM & ROTATE ──────────────────────────────────────────
+  float z=effZoom/100.;
+  float ca=cos(effRot),sa=sin(effRot);
+  vec2 puv=(uvM-.5)/z;
+  puv=vec2(ca*puv.x-sa*puv.y,sa*puv.x+ca*puv.y)+.5;
+  vec2 asp=vec2(resolution.x/resolution.y,1.);
+  vec2 p=puv*asp;
+  float tBase=time*effSpeed*.024;
+  float gS=0.,gW=0.,gT=0.;
+  if(effG>.015){
+    float gn1=fbm3(vec2(glitchPhase*.21+p.x*.33,glitchPhase*.15+p.y*.30));
+    float gn2=fbm3(vec2(p.x*.58+tBase*.09,p.y*.58-tBase*.07)+4.1);
+    float gn3=fbm3(vec2(p.x*.35-p.y*.22+glitchPhase*.08,p.y*.35+p.x*.18+glitchPhase*.11));
+    gS=(gn1*.5+gn2*.3+gn3*.2-.32)*effG*5.5;
+    gW=abs(gn1-gn2)*effG*2.8;
+    gT=(gn2-gn3)*effG*3.2;
+  }
+  float str=effWarp*.2+.06+beatPulse*.12;
+  // ── FRACMODE: pre-warp p for radically different motion per preset ──
+  int fm=int(fracMode+.5);
+  if(fm==1){
+    // Radial rings - concentric inward motion
+    vec2 cp=p-vec2(resolution.x/resolution.y*.5,.5);
+    float r2=length(cp);float a2=atan(cp.y,cp.x);
+    float radShift=fract(r2*2.8-tBase*.35*(1.+srcBass*.6));
+    p=vec2(cos(a2),sin(a2))*radShift+vec2(resolution.x/resolution.y*.5,.5);
+  } else if(fm==2){
+    // Spiral inward pull
+    vec2 cp=p-vec2(resolution.x/resolution.y*.5,.5);
+    float r2=length(cp);
+    float a2=atan(cp.y,cp.x)+r2*4.-tBase*.45*(1.+srcBass*.9);
+    float pull=r2*(0.92+srcBass*.06*arBassZoom);
+    p=vec2(cos(a2),sin(a2))*pull+vec2(resolution.x/resolution.y*.5,.5);
+  } else if(fm==3){
+    // Pulsing breathing + waves
+    vec2 cp=p-vec2(resolution.x/resolution.y*.5,.5);
+    float r2=length(cp);
+    float pulse=1.+sin(r2*7.-tBase*(1.8+srcBass*2.5))*0.1*(1.+srcBass*.7);
+    float rotp=tBase*.06+r2*.4*(1.+srcMid*.3);
+    float cr=cos(rotp),sr=sin(rotp);
+    cp=vec2(cr*cp.x-sr*cp.y,sr*cp.x+cr*cp.y)*pulse;
+    p=cp+vec2(resolution.x/resolution.y*.5,.5);
+  } else if(fm==4){
+    // Kaleidoscope 6-fold
+    vec2 cp=p-vec2(resolution.x/resolution.y*.5,.5);
+    float r2=length(cp);float a2=atan(cp.y,cp.x)+tBase*.04;
+    float seg=TAU/6.;a2=mod(a2,seg);if(a2>seg*.5)a2=seg-a2;
+    p=vec2(cos(a2),sin(a2))*r2+vec2(resolution.x/resolution.y*.5,.5);
+  } else if(fm==5){
+    // Twisted corridor - warp into Z-depth illusion
+    vec2 cp=p-vec2(resolution.x/resolution.y*.5,.5);
+    float twist=sin(tBase*.1+srcBass*.4)*1.5+srcMid*.3;
+    float cr=cos(twist),sr=sin(twist);
+    cp=vec2(cr*cp.x-sr*cp.y,sr*cp.x+cr*cp.y);
+    float zd=1.+sin(tBase*.08)*0.25*(1.+srcBass*.5);
+    p=cp*zd+vec2(resolution.x/resolution.y*.5,.5);
+  }
+  vec3 col=vec3(0.);
+  int sm=int(sceneMode+.5);
+  float smix=sceneMix/100.;
+  vec3 acid=renderAcid(p,tBase,gS,gW,gT,str,effTurb,effCh,effRGB2,effHue,effContour,effMetal,effG,effDark,effSat);
+  if(sm==1){
+    vec3 cgi=renderCGI(puv,tBase,srcBass,effHue,effBounce);
+    // sceneMix blends acid<->cgi, acidMix overlays acid on top of cgi
+    col=mix(acid,cgi,smix);
+    col=mix(col,acid,acidMix/100.*.6);
+  } else {
+    col=acid;
+  }
+  // ── Low poly overlay ──────────────────────────────────────
+  if(polyBlend>.005){
+    float polyT=time*.4*(1.+aBass*.5);
+    vec2 pUV2=puv;
+    float psc=mix(2.,18.,polyDensity);vec2 pgp=pUV2*psc,pgi=floor(pgp),pgf=fract(pgp);
+    float pmD=999.,pmD2=999.,pmD3=999.;vec2 pmP=vec2(0.),pmP2=vec2(0.),pmP3=vec2(0.);
+    float pmId=0.,pmId2=0.,pmId3=0.;
+    for(int dx=-2;dx<=2;dx++){for(int dy=-2;dy<=2;dy++){
+      vec2 nb=vec2(float(dx),float(dy));vec2 cp=pgi+nb;
+      vec2 jit=(vec2(fract(sin(dot(cp,vec2(127.1,311.7)))*43758.5),fract(sin(dot(cp,vec2(269.5,183.3)))*43758.5))-.5)*.5+nb;
+      jit+=vec2(sin(polyT*.3+h2(cp)*6.28)*.08,cos(polyT*.25+h2(cp+1.7)*6.28)*.08)*polyHeight;
+      float d=length(pgf-jit);float id=h2(cp);
+      if(d<pmD){pmD3=pmD2;pmP3=pmP2;pmId3=pmId2;pmD2=pmD;pmP2=pmP;pmId2=pmId;pmD=d;pmP=jit;pmId=id;}
+      else if(d<pmD2){pmD3=pmD2;pmP3=pmP2;pmId3=pmId2;pmD2=d;pmP2=jit;pmId2=id;}
+      else if(d<pmD3){pmD3=d;pmP3=jit;pmId3=id;}
+    }}
+    vec3 pv0=vec3(pmP,h2(pgi+pmP)*polyHeight*.6);
+    vec3 pv1=vec3(pmP2,h2(pgi+pmP2)*polyHeight*.6);
+    vec3 pv2=vec3(pmP3,h2(pgi+pmP3)*polyHeight*.6);
+    vec3 pnm=normalize(cross(pv1-pv0,pv2-pv0));
+    vec3 pL1=normalize(vec3(.4+sin(polyT*.2)*.2,.3+cos(polyT*.15)*.2,1.));
+    float pdiff=max(dot(pnm,pL1),0.)*.7+.3;
+    float psp=pow(max(dot(reflect(-pL1,pnm),vec3(0.,0.,1.)),0.),mix(4.,32.,polySharp));
+    float pbHue=fract(pmId*2.39+polyT*.015+hueOffset);
+    vec3 pbCol=hsv2rgb(vec3(pbHue,.7+pmId*.2,.5+pmId*.4));
+    vec3 peCol=hsv2rgb(vec3(fract(pbHue+.3),.9,.9));
+    float peL=1.-smoothstep(0.,.04/psc,pmD2-pmD);
+    vec3 pc2=pbCol*pdiff+vec3(psp)*.5+peCol*peL*polySharp*.8;
+    int pm=int(polyMode+.5);
+    if(pm==0)col=mix(col,pc2,polyBlend*.85);
+    else if(pm==1)col=mix(col,col*pc2*2.,polyBlend*.7);
+    else if(pm==2)col=mix(col,1.-(1.-col)*(1.-pc2),polyBlend*.65);
+    else{float pl=dot(pc2,vec3(.299,.587,.114));col=mix(col,col*(pl*2.),polyBlend*.8);}
+    if(beatPulse>.1)col+=pc2*beatPulse*.3*polyBlend;
+  }
+  // ── POST: COLOUR GRADE ─────────────────────────────────────
+  if(vidActive>.5&&vidMix>.01){
+    vec3 vidCol=texture2D(vidTex,uv).rgb;
+    if(vidFX>.3){vec3 vh=rgb2hsv(vidCol);vh.x=fract(vh.x+effHue+tBase*.01);vh.y=min(vh.y*1.5,1.);vidCol=hsv2rgb(vh);}
+    if(vidFX>.7)vidCol=crushBits(vidCol,vidFX*.5);
+    col=mix(col,vidCol,vidMix/100.);
+  }
+  vec3 hsv=rgb2hsv(col);
+  hsv.y=clamp(hsv.y*effSat,0.,1.);
+  col=hsv2rgb(hsv);
+  col=(col-.5)*effContr+.5;
+  col*=effBright;
+  col+=beatPulse*.18+srcBass*.04;
+  col=pow(max(col,0.),vec3(.84));
+  if(bitCrush>.01)col=crushBits(col,bitCrush*(1.+aBass*.5));
+  if(vhsNoise>.01){
+    float gr=vhsGrain(uv,glitchPhase,vhsNoise)*(1.+aLevel*.4);
+    col+=gr;
+    float scanInt=(vhsNoise*.4+arLevelScan*.004)*(1.+aLevel*.3);
+    col-=sin(vUV.y*resolution.y*PI)*.06*scanInt;
+  }
+  float lumF=dot(col,vec3(.299,.587,.114));
+  col+=col*max(lumF-.45,0.)*effGlow*.06*(1.+srcLevel*.5);
+  // ── IRIDESCENT GLASS (thin-film rainbow caustics like reference image) ──
+  if(iridAmt>.01){
+    float f1=fbm3(vUV*4.+tBase*.08);
+    float f2=fbm3(vUV*6.+tBase*.11+1.7);
+    float f3=fbm3(vUV*8.+tBase*.07+3.3);
+    float thick=f1*3.+f2*1.5+f3*.8+srcBass*.4+tBase*.04*(1.+srcBass*.3);
+    vec3 iriA,iriB;
+    iriA.r=pow(max(0.,sin(thick*7.1)),1.5);
+    iriA.g=pow(max(0.,sin(thick*7.1+TAU/3.)),1.5);
+    iriA.b=pow(max(0.,sin(thick*7.1+TAU*2./3.)),1.5);
+    iriB.r=pow(max(0.,sin(thick*11.3+tBase*.02)),1.8);
+    iriB.g=pow(max(0.,sin(thick*11.3+TAU/3.+tBase*.02)),1.8);
+    iriB.b=pow(max(0.,sin(thick*11.3+TAU*2./3.+tBase*.02)),1.8);
+    vec3 iriCol=mix(iriA,iriB,.5);
+    float iriMask=clamp(lumF*2.+f1*.5,0.,1.);
+    float sparkle=step(.97,f1*f2+srcHi*.02)*pow(max(f3,0.),2.);
+    iriCol+=sparkle*vec3(.9,.95,1.)*2.;
+    col=mix(col,1.-(1.-col)*(1.-iriCol*iriMask),iridAmt*.9);
+    col+=hsv2rgb(vec3(fract(effHue+thick*.1),.6,pow(max(0.,f1*f2*f3),0.3)*iriMask))*iridAmt*.4*(1.+srcBass*.5);
+  }
+  gl_FragColor=vec4(clamp(col,0.,1.),1.);
+}
+`;
+/* ── DOM helpers ── */
+const $=id=>document.getElementById(id);
+const setS=m=>{$('st').textContent=m;$('st').style.display=m?'block':'none'};
+const setB=p=>{$('bar').style.display=p>0?'block':'none';$('bar').style.width=p+'%'};
+const gv=id=>parseFloat($(id).value)||0;
+const sv=(id,v)=>{const e=$(id);if(!e)return;e.value=v;const ve=$(id+'V');if(ve)ve.textContent=id==='sc'?v+'%':String(v);};
+document.querySelectorAll('input[type=range]').forEach(el=>{
+  const ve=$(el.id+'V');
+  el.oninput=()=>{if(ve)ve.textContent=el.id==='sc'?el.value+'%':el.value;};
+});
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');$('tab-'+tab.dataset.tab).classList.add('active');
+  };
+});
+let fsActive=false;
+function toggleFS(){fsActive=!fsActive;document.body.classList.toggle('fs',fsActive);$('fsBtn').textContent=fsActive?'EXIT':'FULL';applyScale();}
+$('fsBtn').onclick=toggleFS;
+let RW=1920,RH=1080;
+function applyFormat(){const[w,h]=$('fmt').value.split(',').map(Number);RW=w;RH=h;$('sizeLabel').textContent=RW+'×'+RH;if(canvas){canvas.width=RW;canvas.height=RH;}applyScale();}
+function applyScale(){
+  const c=canvas||document.querySelector('canvas');if(!c)return;
+  const avW=fsActive?window.innerWidth:(window.innerWidth-280);
+  const avH=fsActive?window.innerHeight:(window.innerHeight-40);
+  const fit=Math.min(avW/RW,avH/RH)*(fsActive?1:gv('sc')/100);
+  c.style.width=Math.round(RW*fit)+'px';c.style.height=Math.round(RH*fit)+'px';
+}
+$('fmt').onchange=applyFormat;
+$('sc').oninput=()=>{$('scV').textContent=$('sc').value+'%';applyScale();};
+window.addEventListener('resize',applyScale);
+let gl,prog,uniforms={},canvas;
+let vidTexture=null,specTexture=null;
+let hueAuto=0;
+function s1(n,v){if(uniforms[n]!=null)gl.uniform1f(uniforms[n],v);}
+function s2(n,x,y){if(uniforms[n]!=null)gl.uniform2f(uniforms[n],x,y);}
+function s1i(n,v){if(uniforms[n]!=null)gl.uniform1i(uniforms[n],v);}
+let tracks=[],currentTrack=-1,loopTrack=false;
+let audioCtx=null,analyser=null,audioData=null,audioElement=null,micSource=null;
+let aBass=0,aMid=0,aHi=0,aLevel=0;
+const SPEC_BANDS=32;
+let specData=new Float32Array(SPEC_BANDS);
+const fCvs=$('freqCanvas'),fCtx2=fCvs.getContext('2d');
+function ensureCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();}
+function makeAnalyser(){
+  ensureCtx();
+  analyser=audioCtx.createAnalyser();analyser.fftSize=4096;
+  analyser.smoothingTimeConstant=gv('audioSmooth')/100;
+  audioData=new Uint8Array(analyser.frequencyBinCount);
+  analyser.connect(audioCtx.destination);return analyser;
+}
+function renderTrackList(){
+  const tl=$('trackList');tl.innerHTML='';
+  if(!tracks.length){tl.innerHTML='<div class="track-item" style="cursor:default;color:#003a10">LOAD TRACKS TO START</div>';return;}
+  tracks.forEach((tr,i)=>{
+    const d=document.createElement('div');
+    d.className='track-item'+(i===currentTrack?' playing':'');
+    d.textContent=(i+1)+'. '+tr.name;d.title=tr.name;
+    d.onclick=()=>playTrack(i);tl.appendChild(d);
+  });
+}
+function playTrack(idx){
+  if(!tracks.length)return;
+  idx=((idx%tracks.length)+tracks.length)%tracks.length;currentTrack=idx;
+  if(audioElement){audioElement.pause();try{if(audioElement._src)audioElement._src.disconnect();}catch(e){}audioElement.src='';audioElement.remove();audioElement=null;}
+  ensureCtx();const an=makeAnalyser();
+  audioElement=new Audio();audioElement.crossOrigin='anonymous';
+  audioElement.src=tracks[idx].url;audioElement.loop=loopTrack;
+  audioElement.onended=()=>{if(!loopTrack)playTrack(currentTrack+1);};
+  document.body.appendChild(audioElement);
+  try{const src=audioCtx.createMediaElementSource(audioElement);audioElement._src=src;src.connect(an);}catch(e){console.warn('AudioSource:',e);}
+  audioElement.play().catch(e=>console.warn('Play:',e));
+  updatePlayBtn();scrubEl.value=0;scrubTimeEl.textContent='0:00';
+  $('nowPlaying').textContent=tracks[idx].name;
+  $('audioStatus').textContent='PLAYING: '+tracks[idx].name.slice(0,22);
+  renderTrackList();
+}
+function updatePlayBtn(){
+  const btn=$('tPlay');
+  if(!audioElement){btn.textContent='PLAY';btn.classList.remove('on');return;}
+  if(audioElement.paused){btn.textContent='PLAY';btn.classList.remove('on');}
+  else{btn.textContent='PAUSE';btn.classList.add('on');}
+}
+let scrubbing=false;
+const scrubEl=$('scrub'),scrubTimeEl=$('scrubTime');
+function formatTime(s){const m=Math.floor(s/60);return m+':'+(Math.floor(s%60)+'').padStart(2,'0');}
+function updateScrub(){
+  if(!audioElement||scrubbing)return;
+  const dur=audioElement.duration||0,cur=audioElement.currentTime||0;
+  if(dur>0)scrubEl.value=(cur/dur*100).toFixed(1);
+  scrubTimeEl.textContent=formatTime(cur)+(dur>0?' / '+formatTime(dur):'');
+}
+scrubEl.addEventListener('mousedown',()=>{scrubbing=true;});
+scrubEl.addEventListener('touchstart',()=>{scrubbing=true;},{passive:true});
+scrubEl.addEventListener('input',()=>{if(audioElement&&audioElement.duration){audioElement.currentTime=parseFloat(scrubEl.value)/100*audioElement.duration;scrubTimeEl.textContent=formatTime(audioElement.currentTime)+' / '+formatTime(audioElement.duration);}});
+scrubEl.addEventListener('mouseup',()=>{scrubbing=false;});
+scrubEl.addEventListener('touchend',()=>{scrubbing=false;});
+setInterval(updateScrub,250);
+$('tPlay').onclick=()=>{ensureCtx();if(audioElement){if(audioElement.paused){audioElement.play().catch(()=>{});updatePlayBtn();}else{audioElement.pause();updatePlayBtn();}}else if(tracks.length){playTrack(currentTrack>=0?currentTrack:0);}};
+$('tStop').onclick=()=>{if(audioElement){audioElement.pause();audioElement.currentTime=0;updatePlayBtn();}};
+$('tPrev').onclick=()=>playTrack(currentTrack-1);
+$('tNext').onclick=()=>playTrack(currentTrack+1);
+$('tRand').onclick=()=>{if(tracks.length)playTrack(Math.floor(Math.random()*tracks.length));};
+$('tLoop').onclick=()=>{loopTrack=!loopTrack;$('tLoop').classList.toggle('on',loopTrack);if(audioElement)audioElement.loop=loopTrack;};
+$('micBtn').onclick=async()=>{
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false},video:false});
+    ensureCtx();if(micSource){try{micSource.disconnect();}catch(e){}}
+    const an=makeAnalyser();micSource=audioCtx.createMediaStreamSource(stream);micSource.connect(an);window._micStream=stream;
+    $('micBtn').classList.add('on');$('audioStatus').textContent='MIC ACTIVE';
+    setS('MIC ON');setTimeout(()=>setS(''),2000);
+  }catch(e){setS('MIC DENIED: '+e.message);setTimeout(()=>setS(''),4000);}
+};
+$('fileIn').onchange=e=>{
+  const files=Array.from(e.target.files);if(!files.length)return;
+  if(audioElement){audioElement.pause();try{if(audioElement._src)audioElement._src.disconnect();}catch(e2){}audioElement.src='';audioElement.remove();audioElement=null;}
+  files.forEach(f=>{tracks.push({name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f)});});
+  renderTrackList();
+  if(currentTrack<0)playTrack(0);else{setS(files.length+' TRACK'+(files.length>1?'S':'')+' ADDED');setTimeout(()=>setS(''),2500);}
+};
+$('audioOff').onclick=()=>{
+  if(audioElement){audioElement.pause();try{if(audioElement._src)audioElement._src.disconnect();}catch(e){}audioElement.src='';audioElement.remove();audioElement=null;}
+  if(micSource){try{micSource.disconnect();}catch(e){}micSource=null;}
+  if(analyser){try{analyser.disconnect();}catch(e){}analyser=null;}
+  aBass=aMid=aHi=aLevel=0;
+  $('micBtn').classList.remove('on');$('audioStatus').textContent='NO AUDIO';
+  $('nowPlaying').textContent='--';tracks=[];currentTrack=-1;renderTrackList();updatePlayBtn();
+};
+$('audioSmooth').oninput=()=>{if(analyser)analyser.smoothingTimeConstant=gv('audioSmooth')/100;};
+function updateAudio(){
+  if(!analyser||!audioData)return;
+  analyser.getByteFrequencyData(audioData);
+  const gain=gv('audioGain')/100,n=audioData.length;
+  const bHz=audioCtx.sampleRate/analyser.fftSize;
+  const iB=Math.max(1,Math.floor(200/bHz)),iM=Math.max(iB+1,Math.floor(2000/bHz)),iH=Math.max(iM+1,Math.min(n-1,Math.floor(12000/bHz)));
+  let b=0,m=0,hi=0,rms=0;
+  for(let i=1;i<iH;i++){const v=audioData[i]/255;rms+=v*v;if(i<iB)b+=v;else if(i<iM)m+=v;else hi+=v;}
+  const sm=Math.max(0,Math.min(0.97,gv('audioSmooth')/100));
+  aBass=sm*aBass+(1-sm)*Math.min(1,Math.pow(b/iB,0.55)*gain*3.0);
+  aMid=sm*aMid+(1-sm)*Math.min(1,Math.pow(m/(iM-iB),0.55)*gain*2.4);
+  aHi=sm*aHi+(1-sm)*Math.min(1,Math.pow(hi/(iH-iM),0.55)*gain*3.4);
+  aLevel=sm*aLevel+(1-sm)*Math.min(1,Math.sqrt(rms/iH)*gain*2.4);
+  const bSz=Math.floor((iH-iB)/SPEC_BANDS);
+  for(let k=0;k<SPEC_BANDS;k++){let s=0;for(let j=0;j<bSz;j++)s+=audioData[iB+k*bSz+j]/255;specData[k]=Math.min(1,s/bSz*gain*2.6);}
+  if($('vuBass'))$('vuBass').style.height=Math.round(aBass*32)+'px';
+  if($('vuMid'))$('vuMid').style.height=Math.round(aMid*32)+'px';
+  if($('vuHi'))$('vuHi').style.height=Math.round(aHi*32)+'px';
+  if($('vuLevel'))$('vuLevel').style.height=Math.round(aLevel*32)+'px';
+  if($('vuVid'))$('vuVid').style.height=Math.round(vLum*32)+'px';
+  if($('srcBassDisp'))$('srcBassDisp').textContent='BASS: '+aBass.toFixed(2);
+  if($('srcMidDisp'))$('srcMidDisp').textContent='MID: '+aMid.toFixed(2);
+  if($('srcHiDisp'))$('srcHiDisp').textContent='HI: '+aHi.toFixed(2);
+  if($('srcVidDisp'))$('srcVidDisp').textContent='VID: '+vLum.toFixed(2);
+  if($('srcBassDisp'))$('srcBassDisp').className='src-val'+(aBass>.1?' active':'');
+  if($('srcVidDisp'))$('srcVidDisp').className='src-val'+(vLum>.05?' active':'');
+  const fw=$('freqBar').offsetWidth||200;
+  fCvs.width=fw;fCvs.height=28;fCtx2.clearRect(0,0,fw,28);
+  const step=Math.max(1,Math.floor(audioData.length/fw));
+  for(let x=0;x<fw;x++){const v=audioData[x*step]/255;const hue=x<fw*.35?140:x<fw*.7?175:210;fCtx2.fillStyle=`hsl(${hue},100%,${14+v*72}%)`;fCtx2.fillRect(x,28*(1-v),1,28*v);}
+}
+let vidStream=null,vidActive=false;
+const vidSrc=$('vidSrc');
+let vLum=0,vR=0,vG=0,vB=0;
+const _vidCanvas=document.createElement('canvas'),_vidCtx=_vidCanvas.getContext('2d');
+_vidCanvas.width=32;_vidCanvas.height=18;
+function analyseVideo(){
+  if(!vidActive||!vidSrc||vidSrc.readyState<2){vLum=0;vR=0;vG=0;vB=0;return;}
+  try{
+    _vidCtx.drawImage(vidSrc,0,0,32,18);
+    const px=_vidCtx.getImageData(0,0,32,18).data;let r=0,g=0,b=0,n2=px.length/4;
+    for(let i=0;i<px.length;i+=4){r+=px[i]/255;g+=px[i+1]/255;b+=px[i+2]/255;}
+    vR=r/n2;vG=g/n2;vB=b/n2;vLum=0.299*vR+0.587*vG+0.114*vB;
+  }catch(e){vLum=0;vR=0;vG=0;vB=0;}
+}
+function updateVideoTex(){
+  if(!vidActive||!vidTexture)return;
+  if(vidSrc.readyState>=2){gl.bindTexture(gl.TEXTURE_2D,vidTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,vidSrc);gl.bindTexture(gl.TEXTURE_2D,null);}
+}
+function updateSpecTex(){
+  if(!specTexture)return;
+  const buf=new Uint8Array(SPEC_BANDS);
+  for(let i=0;i<SPEC_BANDS;i++)buf[i]=Math.round(specData[i]*255);
+  gl.bindTexture(gl.TEXTURE_2D,specTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,SPEC_BANDS,1,0,gl.LUMINANCE,gl.UNSIGNED_BYTE,buf);gl.bindTexture(gl.TEXTURE_2D,null);
+}
+$('vidCamBtn').onclick=async()=>{
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    vidStream=stream;vidSrc.srcObject=stream;await vidSrc.play();
+    $('vidPreview').srcObject=stream;await $('vidPreview').play();
+    $('vidOverlay').style.display='flex';vidActive=true;$('vidStatus').textContent='CAMERA ACTIVE';$('vidCamBtn').classList.add('on');
+    setS('VIDEO IN');setTimeout(()=>setS(''),2000);
+  }catch(e){setS('CAM DENIED');setTimeout(()=>setS(''),3000);}
+};
+$('vidFileIn').onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const url=URL.createObjectURL(file);
+  vidSrc.srcObject=null;vidSrc.src=url;$('vidPreview').srcObject=null;$('vidPreview').src=url;
+  vidSrc.play();$('vidPreview').play();$('vidOverlay').style.display='flex';
+  vidActive=true;$('vidStatus').textContent='VID: '+file.name.slice(0,16);
+  setS('VIDEO LOADED');setTimeout(()=>setS(''),2000);
+};
+$('vidOffBtn').onclick=()=>{
+  if(vidStream){vidStream.getTracks().forEach(t=>t.stop());vidStream=null;}
+  vidSrc.src='';vidSrc.srcObject=null;$('vidPreview').src='';$('vidPreview').srcObject=null;
+  $('vidOverlay').style.display='none';vidActive=false;$('vidStatus').textContent='NO VIDEO';$('vidCamBtn').classList.remove('on');
+};
+let bpmInterval=null,beatPulse=0,tapTimes=[];
+function fireBeat(){if($('beatFlashBtn').classList.contains('on'))beatPulse=1;if($('beatGlitchBtn').classList.contains('on'))triggerGlitch();}
+function startBpm(){if(bpmInterval)clearInterval(bpmInterval);bpmInterval=setInterval(fireBeat,60000/gv('bpm'));}
+$('bpmSyncBtn').onclick=startBpm;
+$('bpm').oninput=()=>{$('bpmV').textContent=$('bpm').value;if(bpmInterval)startBpm();};
+$('beatFlashBtn').onclick=()=>$('beatFlashBtn').classList.toggle('on');
+$('beatGlitchBtn').onclick=()=>$('beatGlitchBtn').classList.toggle('on');
+$('tapBtn').onclick=()=>{
+  const now=performance.now();tapTimes.push(now);if(tapTimes.length>8)tapTimes.shift();
+  if(tapTimes.length>1){const avg=tapTimes.slice(1).map((tt,i)=>tt-tapTimes[i]).reduce((a,b)=>a+b)/(tapTimes.length-1);const b2=Math.round(60000/avg);$('bpm').value=Math.min(240,Math.max(40,b2));$('bpmV').textContent=$('bpm').value;if(bpmInterval)startBpm();}
+};
+let glitchPhase=0,glitchAutoActive=false,glitchAutoTimer=null;
+function triggerGlitch(){glitchPhase+=0.6+Math.random()*2.5;if(gv('glitchAmt')<5){sv('glitchAmt',65);setTimeout(()=>sv('glitchAmt',0),180+Math.random()*180);}}
+$('glitchTrigger').onclick=triggerGlitch;
+$('glitchAutoBtn').onclick=()=>{glitchAutoActive=!glitchAutoActive;$('glitchAutoBtn').classList.toggle('on',glitchAutoActive);if(glitchAutoActive)schedAutoGlitch();else if(glitchAutoTimer){clearTimeout(glitchAutoTimer);glitchAutoTimer=null;}};
+function schedAutoGlitch(){if(!glitchAutoActive)return;const ms=Math.max(80,2000-gv('glitchRate')*18)*(0.5+Math.random());glitchAutoTimer=setTimeout(()=>{triggerGlitch();schedAutoGlitch();},ms);}
+['mirrorX','mirrorY','mirrorR'].forEach(id=>$(id).onclick=()=>$(id).classList.toggle('on'));
+/* ── Presets ── */
+// fracMode: 0=standard, 1=radial, 2=spiral, 3=pulse, 4=kaleido, 5=twisted
+// iridAmt: 0=off, 1=full iridescent glass
+const PDEF={sp:5,wp:2,turb:7,ch:6,dark:86,metal:16,contour:66,zm:59,rot:2,br:82,ct:140,sat:105,hs:22,hspd:9,px:1,glow:52,
+  sceneMode:1,sceneMix:100,acidMix:12,objType:4,objScale:122,objSpin:52,objCount:3,objBounce:80,floorOn:1,fogAmt:51,envType:3,
+  tunnelAmt:17,tunnelSpeed:32,fracMode:0,iridAmt:0,
+  glitchAmt:50,glitchFluid:0,glitchFold:0,glitchRGB:56,pixelSort:100,scanTear:17,hSync:50,bitCrush:0,frameGhost:0,blockCorrupt:5,datamosh:0,feedbackAmt:0,
+  polyBlend:0,polyDensity:40,polyHeight:50,polySharp:60,polyMode:0,
+  vidMix:0,vidFX:50,beatWarp:50,beatZoom:40,nukeRate:30};
+const P={
+  /* ─ DARK ACID — each has unique motion signature ─────────────────────── */
+  // Standard FBM flow — the baseline
+  acid_classic:{...PDEF,sp:6,wp:5,turb:6,ch:5,dark:85,metal:0,contour:20,zm:25,rot:0,br:90,ct:140,sat:90,hs:0,hspd:3,glow:18,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Concentric radial rings moving inward — very different from standard
+  neon_swamp:{...PDEF,sp:4,wp:6,turb:9,ch:4,dark:90,metal:0,contour:78,zm:30,rot:0,br:80,ct:150,sat:85,hs:22,hspd:2,glow:25,fracMode:1,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchRGB:15},
+  // Heavy chrome metallic with radial motion
+  liquid_metal:{...PDEF,sp:3,wp:7,turb:4,ch:2,dark:78,metal:88,contour:0,zm:25,rot:5,br:78,ct:155,sat:55,hs:65,hspd:1,glow:30,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Iridescent glass — reference image aesthetic
+  iridescent:{...PDEF,sp:4,wp:5,turb:6,ch:14,dark:80,metal:35,contour:15,zm:28,rot:0,br:88,ct:115,sat:140,hs:18,hspd:5,glow:45,fracMode:3,iridAmt:0.85,sceneMode:0,tunnelAmt:0,glitchRGB:28},
+  // Spiral inward pull — unique motion
+  void_warp:{...PDEF,sp:3,wp:10,turb:14,ch:8,dark:96,metal:0,contour:8,zm:25,rot:0,br:45,ct:190,sat:65,hs:54,hspd:1,glow:20,fracMode:2,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Pulsing breathing waves — very different feel
+  neon_contour:{...PDEF,sp:5,wp:5,turb:5,ch:3,dark:92,metal:12,contour:92,zm:25,rot:0,br:100,ct:160,sat:100,hs:65,hspd:2,glow:35,fracMode:3,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Very slow deep zoom — minimal motion, maximum texture
+  deep_field:{...PDEF,sp:1,wp:3,turb:2,ch:5,dark:90,metal:0,contour:12,zm:60,rot:0,br:55,ct:105,sat:125,hs:60,hspd:1,glow:15,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Fast chaotic pixel explosion — high energy
+  pixel_storm:{...PDEF,sp:11,wp:7,turb:18,ch:10,dark:74,metal:0,contour:0,zm:25,rot:0,br:90,ct:108,sat:80,hs:25,hspd:7,px:8,glow:20,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchAmt:25,glitchFluid:70,glitchFold:55,glitchRGB:40,pixelSort:22},
+  // Kaleidoscope 6-fold symmetry
+  mirror_acid:{...PDEF,sp:5,wp:5,turb:7,ch:7,dark:87,metal:5,contour:28,zm:25,rot:0,br:82,ct:125,sat:98,hs:14,hspd:3,glow:22,fracMode:4,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Ghost circuit: kaleid + strong metallic contour lines
+  ghost_circuit:{...PDEF,sp:3,wp:3,turb:3,ch:4,dark:96,metal:58,contour:94,zm:25,rot:0,br:78,ct:135,sat:72,hs:88,hspd:2,glow:42,fracMode:4,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Slow blood lava — dense low speed
+  slow_lava:{...PDEF,sp:1,wp:3,turb:2,ch:2,dark:90,metal:0,contour:5,zm:25,rot:0,br:55,ct:78,sat:115,hs:4,hspd:1,glow:12,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Twisted corridor with strong rotation
+  blood_moon:{...PDEF,sp:4,wp:6,turb:9,ch:3,dark:93,metal:8,contour:20,zm:25,rot:25,br:52,ct:165,sat:125,hs:1,hspd:2,glow:20,fracMode:5,iridAmt:0,sceneMode:0,tunnelAmt:0},
+  // Oil spill: radial + iridescent thin film
+  oil_spill:{...PDEF,sp:3,wp:5,turb:6,ch:15,dark:88,metal:25,contour:5,zm:25,rot:0,br:72,ct:122,sat:135,hs:30,hspd:3,glow:28,fracMode:1,iridAmt:0.55,sceneMode:0,tunnelAmt:0},
+  // Digital rain: fast vertical contour lines
+  digital_rain:{...PDEF,sp:8,wp:3,turb:5,ch:2,dark:96,metal:0,contour:75,zm:25,rot:0,br:108,ct:175,sat:62,hs:26,hspd:1,px:2,glow:22,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchAmt:10,pixelSort:8},
+  // Quantum foam: pulsing + heavy turbulence
+  quantum_foam:{...PDEF,sp:9,wp:9,turb:19,ch:10,dark:84,metal:0,contour:7,zm:25,rot:0,br:92,ct:135,sat:92,hs:40,hspd:5,glow:25,fracMode:3,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchAmt:15,pixelSort:10},
+  // Solar flare: fast + high brightness + twisted
+  solar_flare:{...PDEF,sp:12,wp:4,turb:7,ch:5,dark:62,metal:20,contour:12,zm:25,rot:30,br:140,ct:180,sat:135,hs:3,hspd:8,glow:60,fracMode:5,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchAmt:6},
+  // Crystal acid: kaleid + high contour metallic
+  crystal_acid:{...PDEF,sp:3,wp:4,turb:5,ch:11,dark:80,metal:35,contour:68,zm:25,rot:15,br:85,ct:138,sat:115,hs:35,hspd:2,glow:32,fracMode:4,iridAmt:0.25,sceneMode:0,tunnelAmt:0,glitchRGB:18},
+  // Fever dream: max speed + twisted spiral
+  fever_dream:{...PDEF,sp:16,wp:9,turb:13,ch:13,dark:70,metal:5,contour:14,zm:25,rot:60,br:100,ct:152,sat:148,hs:55,hspd:10,glow:38,fracMode:2,iridAmt:0,sceneMode:0,tunnelAmt:0,glitchAmt:22,glitchRGB:35,pixelSort:14},
+  // Aurora: radial + iridescent pastel
+  aurora:{...PDEF,sp:3,wp:4,turb:5,ch:8,dark:90,metal:0,contour:24,zm:25,rot:0,br:88,ct:110,sat:135,hs:47,hspd:2,glow:38,fracMode:1,iridAmt:0.35,sceneMode:0,tunnelAmt:0},
+  // Black hole: spiral + tunnel combined
+  black_hole:{...PDEF,sp:2,wp:9,turb:6,ch:7,dark:98,metal:0,contour:5,zm:25,rot:0,br:32,ct:210,sat:68,hs:70,hspd:1,glow:22,fracMode:2,iridAmt:0,sceneMode:0,tunnelAmt:35,tunnelSpeed:22,glitchFold:60},
+  /* ─ DARK ACID + TUNNEL (acid rendering + tunnel warp) ────────────────── */
+  // Standard FBM pulled into vortex
+  acid_tunnel:{...PDEF,sp:9,wp:6,turb:9,ch:7,dark:88,metal:6,contour:32,zm:25,rot:0,br:88,ct:158,sat:102,hs:20,hspd:4,glow:36,fracMode:0,iridAmt:0,sceneMode:0,tunnelAmt:68,tunnelSpeed:62},
+  // Radial rings + tunnel = pure vortex suck
+  wormhole:{...PDEF,sp:5,wp:8,turb:10,ch:9,dark:94,metal:0,contour:48,zm:25,rot:22,br:70,ct:175,sat:88,hs:55,hspd:3,glow:52,fracMode:1,iridAmt:0,sceneMode:0,tunnelAmt:88,tunnelSpeed:82,glitchRGB:22},
+  // Spiral + tunnel: double spiral pull
+  vortex_pull:{...PDEF,sp:7,wp:10,turb:13,ch:6,dark:95,metal:10,contour:14,zm:25,rot:0,br:60,ct:190,sat:72,hs:68,hspd:2,glow:46,fracMode:2,iridAmt:0,sceneMode:0,tunnelAmt:78,tunnelSpeed:52,glitchFluid:72,glitchAmt:28},
+  // Pulsing + deep tunnel
+  stargate:{...PDEF,sp:13,wp:7,turb:7,ch:5,dark:82,metal:42,contour:58,zm:25,rot:10,br:92,ct:162,sat:96,hs:45,hspd:6,glow:62,fracMode:3,iridAmt:0,sceneMode:0,tunnelAmt:92,tunnelSpeed:92,glitchRGB:32},
+  // Hyperspace: max tunnel + twisted
+  hyperspace:{...PDEF,sp:20,wp:5,turb:4,ch:3,dark:96,metal:58,contour:11,zm:40,rot:0,br:98,ct:195,sat:58,hs:62,hspd:8,glow:72,fracMode:5,iridAmt:0,sceneMode:0,tunnelAmt:100,tunnelSpeed:100},
+  // Iridescent glass tunnel
+  iris_hole:{...PDEF,sp:6,wp:6,turb:8,ch:16,dark:82,metal:30,contour:20,zm:28,rot:0,br:85,ct:130,sat:145,hs:28,hspd:5,glow:55,fracMode:3,iridAmt:0.75,sceneMode:0,tunnelAmt:55,tunnelSpeed:48,glitchRGB:20},
+  // Kaleid + tunnel: rotating vortex of symmetry
+  kaleido_vortex:{...PDEF,sp:8,wp:6,turb:10,ch:8,dark:88,metal:15,contour:40,zm:25,rot:18,br:82,ct:148,sat:108,hs:35,hspd:4,glow:40,fracMode:4,iridAmt:0,sceneMode:0,tunnelAmt:60,tunnelSpeed:55},
+  /* ─ LOW POLY 3D ──────────────────────────────────────────────────────── */
+  lp_spheres:{...PDEF,sceneMode:1,sceneMix:100,acidMix:10,objType:0,objScale:110,objSpin:50,objCount:4,objBounce:85,floorOn:1,fogAmt:30,envType:0,zm:25,br:115,ct:145,sat:110,hspd:3,glow:35,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_pyramids:{...PDEF,sceneMode:1,sceneMix:100,acidMix:5,objType:2,objScale:115,objSpin:30,objCount:3,objBounce:75,floorOn:1,fogAmt:28,envType:1,zm:25,br:120,ct:142,sat:115,hs:5,hspd:2,glow:30,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_checker:{...PDEF,sceneMode:1,sceneMix:100,acidMix:0,objType:0,objScale:90,objSpin:55,objCount:3,objBounce:90,floorOn:1,fogAmt:18,envType:0,zm:25,br:120,ct:155,sat:100,hspd:4,glow:28,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_skull:{...PDEF,sceneMode:1,sceneMix:100,acidMix:5,objType:3,objScale:130,objSpin:20,objCount:1,objBounce:55,floorOn:1,fogAmt:42,envType:0,zm:25,br:85,ct:155,sat:85,hs:2,hspd:1,glow:25,glitchAmt:6,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_torus:{...PDEF,sceneMode:1,sceneMix:100,acidMix:8,objType:4,objScale:105,objSpin:65,objCount:2,objBounce:80,floorOn:1,fogAmt:35,envType:0,zm:25,br:105,ct:148,sat:100,hs:45,hspd:4,glow:40,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_multi:{...PDEF,sceneMode:1,sceneMix:100,acidMix:15,objType:5,objScale:95,objSpin:40,objCount:5,objBounce:90,floorOn:1,fogAmt:38,envType:0,zm:25,br:105,ct:138,sat:115,hspd:4,glow:38,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_acid_blend:{...PDEF,sceneMode:1,sceneMix:72,acidMix:50,objType:0,objScale:120,objSpin:45,objCount:3,objBounce:75,floorOn:1,fogAmt:30,envType:0,zm:25,br:95,ct:142,sat:100,hspd:3,glow:30,fracMode:3,iridAmt:0.2,ch:7,dark:85,turb:9,tunnelAmt:0},
+  lp_palms:{...PDEF,sceneMode:1,sceneMix:100,acidMix:5,objType:6,objScale:105,objSpin:20,objCount:4,objBounce:82,floorOn:1,fogAmt:25,envType:2,zm:25,br:120,ct:140,sat:120,hs:48,hspd:2,glow:35,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_phone:{...PDEF,sceneMode:1,sceneMix:100,acidMix:8,objType:7,objScale:110,objSpin:60,objCount:3,objBounce:95,floorOn:1,fogAmt:20,envType:0,zm:25,br:100,ct:150,sat:105,hs:25,hspd:3,glow:30,glitchAmt:10,glitchRGB:25,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_city:{...PDEF,sceneMode:1,sceneMix:100,acidMix:10,objType:8,objScale:85,objSpin:8,objCount:1,objBounce:25,floorOn:1,fogAmt:55,envType:0,zm:25,br:90,ct:145,sat:90,hs:10,hspd:2,glow:50,fracMode:0,iridAmt:0,tunnelAmt:0},
+  lp_crystal_cave:{...PDEF,sceneMode:1,sceneMix:90,acidMix:20,objType:4,objScale:95,objSpin:30,objCount:4,objBounce:65,floorOn:1,fogAmt:65,envType:4,zm:25,br:85,ct:160,sat:130,hs:55,hspd:3,glow:60,glitchRGB:12,fracMode:0,iridAmt:0.3,tunnelAmt:0},
+  lp_floating:{...PDEF,sceneMode:1,sceneMix:85,acidMix:25,objType:5,objScale:105,objSpin:25,objCount:6,objBounce:100,floorOn:0,fogAmt:15,envType:3,zm:25,br:100,ct:140,sat:120,hs:60,hspd:4,glow:55,fracMode:0,iridAmt:0,tunnelAmt:0},
+};
+
+/* ── preset helpers ── */
+function setMirror(mX,mY,mR){
+  $('mirrorX').classList.toggle('on',!!mX);
+  $('mirrorY').classList.toggle('on',!!mY);
+  $('mirrorR').classList.toggle('on',!!mR);
+}
+function applyParams(p){
+  for(const[k,v]of Object.entries(p))sv(k,v);
+}
+function applyPreset(key){
+  const base={...PDEF,...(P[key]||{})};
+  applyParams(base);
+  const opt=$('presetSel').querySelector(`option[value="${key}"]`);
+  $('currentPresetName').textContent=opt?opt.textContent:key;
+  $('presetSel').value=key;
+  $('sceneMode').value=String(base.sceneMode||0);
+  // Apply mirror state if preset specifies it
+  if(base.mX!==undefined||base.mY!==undefined||base.mR!==undefined)
+    setMirror(base.mX||0,base.mY||0,base.mR||0);
+}
+$('presetSel').onchange=()=>{if($('presetSel').value)applyPreset($('presetSel').value);};
+applyPreset('acid_classic');
+
+const rnd=(a,b)=>Math.round(a+Math.random()*(b-a));
+$('randBtn').onclick=()=>{
+  applyParams({...PDEF,sp:rnd(2,14),wp:rnd(2,9),turb:rnd(2,18),ch:rnd(2,12),dark:rnd(76,96),
+    metal:rnd(0,65),contour:rnd(0,55),zm:rnd(18,70),rot:rnd(0,35),br:rnd(55,120),
+    ct:rnd(95,180),sat:rnd(62,148),hs:rnd(0,100),hspd:rnd(0,10),px:rnd(1,5),glow:rnd(8,55),
+    fracMode:rnd(0,5),iridAmt:Math.random()>.7?Math.random()*.8:0,
+    tunnelAmt:Math.random()>.6?rnd(20,80):0,tunnelSpeed:rnd(20,80),sceneMode:0});
+  $('sceneMode').value='0';$('currentPresetName').textContent='RANDOM';$('presetSel').value='';
+};
+$('randGlitchBtn').onclick=()=>applyParams({glitchAmt:rnd(20,85),glitchFluid:rnd(30,100),glitchFold:rnd(15,100),glitchRGB:rnd(10,75),pixelSort:rnd(0,60),scanTear:rnd(0,80),hSync:rnd(0,40),bitCrush:rnd(0,65),frameGhost:rnd(0,85),blockCorrupt:rnd(0,70),datamosh:rnd(0,60)});
+const savedP={};
+const SAVE_KEYS=Object.keys(PDEF);
+$('savePresetBtn').onclick=()=>{
+  const name=prompt('Name:','My Preset');if(!name)return;
+  savedP[name]=Object.fromEntries(SAVE_KEYS.map(k=>[k,gv(k)||0]));
+  const o=document.createElement('option');o.value=name;o.textContent=name;$('savedSel').appendChild(o);
+};
+$('savedSel').onchange=()=>{const p=savedP[$('savedSel').value];if(p){applyParams(p);$('currentPresetName').textContent=$('savedSel').value;}};
+$('exportPresetBtn').onclick=()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify(savedP,null,2)],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download='acidmath_presets.json';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);
+};
+$('importPreset').onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);for(const[name,p]of Object.entries(data)){savedP[name]=p;const o=document.createElement('option');o.value=name;o.textContent=name;$('savedSel').appendChild(o);}setS('IMPORTED '+Object.keys(data).length+' PRESETS');setTimeout(()=>setS(''),2500);}catch(e2){setS('INVALID FILE');}};
+  reader.readAsText(file);
+};
+$('snapBtn').onclick=()=>{
+  const c=window._glCanvas;if(!c)return;
+  c.toBlob(b=>{const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=`acidmath_${RW}x${RH}_${Date.now()}.png`;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);setS('PNG SAVED');setTimeout(()=>setS(''),2000);},'image/png');
+};
+/* ── Recording ── */
+let recorder,chunks=[],recording=false;
+function getBestMime(){for(const m of['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4'])if(MediaRecorder.isTypeSupported(m))return m;for(const m of['video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm'])if(MediaRecorder.isTypeSupported(m))return m;return'';}
+function dlBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},15000);}
+function startRec(cv){
+  if(recording)return;chunks=[];
+  const mime=getBestMime();const vt=cv.captureStream(60).getVideoTracks();let allT=[...vt];
+  if(audioCtx&&analyser){try{const dest=audioCtx.createMediaStreamDestination();analyser.connect(dest);const at=dest.stream.getAudioTracks();if(at.length)allT=[...vt,...at];}catch(e){}}
+  const stream=new MediaStream(allT);
+  try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:30_000_000});}catch(e){recorder=new MediaRecorder(stream,{videoBitsPerSecond:30_000_000});}
+  recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+  recorder.onstop=()=>{const um=recorder.mimeType||mime;const ext=um.includes('mp4')?'mp4':'webm';dlBlob(new Blob(chunks,{type:um}),`acidmath_${RW}x${RH}.${ext}`);setB(0);setS(ext.toUpperCase()+' SAVED');setTimeout(()=>setS(''),4000);};
+  recorder.start(100);recording=true;
+  $('dot').style.display='block';$('recBtn').disabled=true;$('stopBtn').disabled=false;$('recBtn').classList.add('on');
+  const hasAudio=allT.length>1;setS('REC'+(hasAudio?' +AUDIO':''));setB(1);
+}
+function stopRec(){if(!recording)return;recording=false;recorder.stop();$('dot').style.display='none';$('recBtn').disabled=false;$('stopBtn').disabled=true;$('recBtn').classList.remove('on');setS('SAVING');setB(99);}
+$('recBtn').onclick=()=>startRec(window._glCanvas);$('stopBtn').onclick=stopRec;
+document.addEventListener('keydown',e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
+  if(e.key==='R')startRec(window._glCanvas);if(e.key==='S')stopRec();
+  if(e.key==='d')$('randBtn').click();if(e.key==='t')triggerGlitch();
+  if(e.key==='f'||e.key==='F')toggleFS();if(e.key==='Escape'&&fsActive)toggleFS();
+  if(e.key===' '){e.preventDefault();$('beatFlashBtn').classList.toggle('on');}
+});
+/* ── Math Nuke — 60% acid/tunnel, 40% lowpoly ── */
+let nukeActive=false,nukeInterval=null;
+function rndRange(lo,hi){return lo+Math.random()*(hi-lo);}
+const ACID_PRESETS=Object.keys(P).filter(k=>!k.startsWith('lp_'));
+const LP_PRESETS=Object.keys(P).filter(k=>k.startsWith('lp_'));
+function mathNuke(){
+  if(!nukeActive)return;
+  // 60% chance: randomize acid+tunnel params (dark acid base)
+  // 40% chance: pick a lowpoly preset and randomize it a bit
+  if(Math.random()<0.6){
+    // Dark acid + possible tunnel mode
+    const useTunnel=Math.random()>.5;
+    const fm=Math.floor(Math.random()*6);
+    const useIrid=Math.random()>.7;
+    applyParams({
+      sceneMode:0,
+      sp:rndRange(1,16),wp:rndRange(1,9),turb:rndRange(0,18),
+      ch:rndRange(0,14),dark:rndRange(72,97),metal:rndRange(0,70),
+      contour:rndRange(0,72),zm:rndRange(10,75),rot:rndRange(0,65),
+      br:rndRange(45,130),ct:rndRange(88,195),sat:rndRange(42,150),
+      hs:rndRange(0,100),hspd:rndRange(0,12),px:rndRange(1,5),glow:rndRange(0,65),
+      fracMode:fm,iridAmt:useIrid?rndRange(0.2,0.9):0,
+      tunnelAmt:useTunnel?rndRange(20,100):0,tunnelSpeed:rndRange(10,100),
+      glitchAmt:rndRange(0,40),glitchFluid:rndRange(0,80),glitchFold:rndRange(0,55),
+      glitchRGB:rndRange(0,50),pixelSort:rndRange(0,30),
+      scanTear:rndRange(0,25),hSync:rndRange(0,15),
+    });
+    $('sceneMode').value='0';
+  } else {
+    // Pick a lowpoly preset then slightly randomize on top
+    const lpKey=LP_PRESETS[Math.floor(Math.random()*LP_PRESETS.length)];
+    applyPreset(lpKey);
+    // Add variation
+    applyParams({
+      objSpin:rndRange(10,90),objBounce:rndRange(50,100),
+      objScale:rndRange(70,180),fogAmt:rndRange(5,60),
+      hspd:rndRange(1,10),glow:rndRange(20,70),
+      acidMix:rndRange(5,55),iridAmt:Math.random()>.5?rndRange(0,0.6):0,
+    });
+  }
+  $('currentPresetName').textContent='MATH NUKE';$('presetSel').value='';
+}
+$('nukeBtn').onclick=()=>{
+  nukeActive=!nukeActive;$('nukeBtn').classList.toggle('on',nukeActive);
+  if(nukeActive){
+    $('nukeBtn').textContent='STOP NUKE';
+    const rate=Math.max(200,1200-gv('nukeRate')*8);
+    nukeInterval=setInterval(mathNuke,rate);mathNuke();
+  }else{$('nukeBtn').textContent='MATH NUKE';clearInterval(nukeInterval);nukeInterval=null;}
+};
+/* ── WebGL init ── */
+function compileShader(g,src,type){
+  const s=g.createShader(type);g.shaderSource(s,src);g.compileShader(s);
+  if(!g.getShaderParameter(s,g.COMPILE_STATUS))console.error('Shader:',g.getShaderInfoLog(s));
+  return s;
+}
+function initGL(){
+  canvas=document.createElement('canvas');canvas.width=RW;canvas.height=RH;
+  $('wrap').appendChild(canvas);window._glCanvas=canvas;window._p5canvas=canvas;
+  gl=canvas.getContext('webgl',{antialias:false,preserveDrawingBuffer:true,alpha:false});
+  if(!gl){alert('WebGL not supported');return;}
+  const vs=compileShader(gl,VERT,gl.VERTEX_SHADER),fs=compileShader(gl,FRAG,gl.FRAGMENT_SHADER);
+  prog=gl.createProgram();gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS))console.error('Link:',gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+  const vbuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vbuf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const aPos=gl.getAttribLocation(prog,'aPos');
+  gl.enableVertexAttribArray(aPos);gl.vertexAttribPointer(aPos,2,gl.FLOAT,false,0,0);
+  const UN=[
+    'resolution','time','pixelSize','speed','warpAmt','turbulence','chromaAmt',
+    'darkness','metallic','contourAmt','zoom','rotation','brightness','contrast',
+    'saturation','hueOffset','mirrorX','mirrorY','mirrorR','glowAmt',
+    'sceneMode','sceneMix','acidMix',
+    'objType','objScale','objSpin','objCount','objBounce','floorOn','fogAmt','envType',
+    'tunnelAmt','tunnelSpeed','fracMode','iridAmt',
+    'polyBlend','polyDensity','polyHeight','polySharp','polyMode',
+    'aBass','aMid','aHi','aLevel',
+    'arBassSpeed','arBassWarp','arBassZoom','arBassGlitch','arBassMetal','arBassObj',
+    'arMidTurb','arMidChroma','arMidContour','arMidContrast','arMidRotate','arMidFrac',
+    'arHiPixel','arHiGlitch','arHiRGB','arHiSat','arHiGlow',
+    'arLevelHue','arLevelBright','arLevelScan',
+    'glitchAmt','glitchPhase','glitchFluid','glitchVortex','glitchFold','glitchRGB',
+    'pixelSortAmt','scanTear','hSync','bitCrush','frameGhost','blockCorrupt',
+    'vhsNoise','datamoshAmt','feedbackAmt','beatPulse','beatWarp','beatZoom',
+    'vidTex','vidMix','vidFX','vidActive','specTex','vLum','vR','vG','vB'
+  ];
+  UN.forEach(nm=>uniforms[nm]=gl.getUniformLocation(prog,nm));
+  vidTexture=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,vidTexture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+  specTexture=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,specTexture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,32,1,0,gl.LUMINANCE,gl.UNSIGNED_BYTE,new Uint8Array(32));
+  applyScale();startBpm();loop();
+}
+/* ── Render loop ── */
+function loop(){
+  requestAnimationFrame(loop);
+  updateAudio();updateVideoTex();analyseVideo();updateSpecTex();
+  hueAuto+=gv('hspd')*.0004;
+  if(beatPulse>0)beatPulse=Math.max(0,beatPulse-.04);
+  glitchPhase+=.004;
+  if(aBass>.45)glitchPhase+=aBass*.09;if(aBass>.70)glitchPhase+=aBass*.12;if(aHi>.55)glitchPhase+=aHi*.06;
+  gl.viewport(0,0,canvas.width,canvas.height);gl.useProgram(prog);
+  s2('resolution',canvas.width,canvas.height);
+  s1('time',performance.now()/1000.0);
+  s1('pixelSize',Math.max(1,gv('px')));
+  s1('speed',Math.max(.1,gv('sp')));
+  s1('warpAmt',Math.max(.1,gv('wp')));
+  s1('turbulence',Math.max(0,gv('turb')));
+  s1('chromaAmt',Math.max(0,gv('ch')));
+  s1('darkness',gv('dark'));
+  s1('metallic',gv('metal'));
+  s1('contourAmt',gv('contour'));
+  s1('zoom',Math.max(1,gv('zm')));
+  s1('rotation',gv('rot')*.015);
+  s1('brightness',Math.max(0,gv('br')/100));
+  s1('contrast',Math.max(0,gv('ct')/100));
+  s1('saturation',Math.max(0,gv('sat')/100));
+  s1('hueOffset',gv('hs')/100+hueAuto);
+  s1('mirrorX',$('mirrorX').classList.contains('on')?1.:0.);
+  s1('mirrorY',$('mirrorY').classList.contains('on')?1.:0.);
+  s1('mirrorR',$('mirrorR').classList.contains('on')?1.:0.);
+  s1('glowAmt',gv('glow')/100);
+  s1('sceneMode',Math.min(1.,parseFloat($('sceneMode').value)||0));
+  s1('sceneMix',gv('sceneMix'));
+  s1('acidMix',gv('acidMix'));
+  s1('objType',gv('objType'));
+  s1('objScale',gv('objScale'));
+  s1('objSpin',gv('objSpin'));
+  s1('objCount',gv('objCount'));
+  s1('objBounce',gv('objBounce')/100);
+  s1('floorOn',gv('floorOn'));
+  s1('fogAmt',gv('fogAmt'));
+  s1('envType',gv('envType'));
+  s1('tunnelAmt',gv('tunnelAmt')/100);
+  s1('tunnelSpeed',gv('tunnelSpeed'));
+  s1('fracMode',gv('fracMode'));
+  s1('iridAmt',gv('iridAmt'));
+  s1('polyBlend',gv('polyBlend')/100);
+  s1('polyDensity',gv('polyDensity')/100);
+  s1('polyHeight',gv('polyHeight')/100);
+  s1('polySharp',gv('polySharp')/100);
+  s1('polyMode',gv('polyMode'));
+  s1('aBass',aBass);s1('aMid',aMid);s1('aHi',aHi);s1('aLevel',aLevel);
+  s1('arBassSpeed',gv('arBassSpeed')/100);s1('arBassWarp',gv('arBassWarp')/100);
+  s1('arBassZoom',gv('arBassZoom')/100);s1('arBassGlitch',gv('arBassGlitch')/100);
+  s1('arBassMetal',gv('arBassMetal')/100);s1('arBassObj',gv('arBassObj')/100);
+  s1('arMidTurb',gv('arMidTurb')/100);s1('arMidChroma',gv('arMidChroma')/100);
+  s1('arMidContour',gv('arMidContour')/100);s1('arMidContrast',gv('arMidContrast')/100);
+  s1('arMidRotate',gv('arMidRotate')/100);s1('arMidFrac',gv('arMidFrac')/100);
+  s1('arHiPixel',gv('arHiPixel')/100);s1('arHiGlitch',gv('arHiGlitch')/100);
+  s1('arHiRGB',gv('arHiRGB')/100);s1('arHiSat',gv('arHiSat')/100);s1('arHiGlow',gv('arHiGlow')/100);
+  s1('arLevelHue',gv('arLevelHue')/100);s1('arLevelBright',gv('arLevelBright')/100);s1('arLevelScan',gv('arLevelScan')/100);
+  s1('glitchAmt',gv('glitchAmt')/100);s1('glitchPhase',glitchPhase);
+  s1('glitchFluid',gv('glitchFluid')/100);s1('glitchVortex',0.0);
+  s1('glitchFold',gv('glitchFold')/100);s1('glitchRGB',gv('glitchRGB')/100);
+  s1('pixelSortAmt',gv('pixelSort')/100);s1('scanTear',gv('scanTear')/100);
+  s1('hSync',gv('hSync')/100);s1('bitCrush',gv('bitCrush')/100);
+  s1('frameGhost',gv('frameGhost')/100);s1('blockCorrupt',gv('blockCorrupt')/100);
+  s1('vhsNoise',0.0);s1('datamoshAmt',gv('datamosh')/100);s1('feedbackAmt',gv('feedbackAmt')/100);
+  s1('beatPulse',beatPulse);s1('beatWarp',gv('beatWarp')/100);s1('beatZoom',gv('beatZoom')/100);
+  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,vidTexture);
+  s1i('vidTex',0);s1('vidMix',gv('vidMix')/100);s1('vidFX',gv('vidFX')/100);s1('vidActive',vidActive?1.:0.);
+  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,specTexture);s1i('specTex',1);
+  s1('vLum',vLum);s1('vR',vR);s1('vG',vG);s1('vB',vB);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+renderTrackList();
+initGL();
+</script>
+</body>
+</html>
+
+
